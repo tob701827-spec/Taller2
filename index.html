@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel de administración - Taller</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="container">
+
+  <h1>Panel de administración</h1>
+  <p class="subtitle">Cargá vehículos, servicios y observaciones</p>
+
+  <!-- LOGIN -->
+  <div class="card" id="login-card">
+    <label>Email</label>
+    <input type="email" id="login-email" placeholder="tu@taller.com">
+    <label>Contraseña</label>
+    <input type="password" id="login-pass">
+    <button onclick="login()">Ingresar</button>
+    <p class="error" id="login-error"></p>
+  </div>
+
+  <!-- PANEL (oculto hasta loguear) -->
+  <div id="panel" class="hidden">
+
+    <div class="card">
+      <h3>Nuevo vehículo</h3>
+      <label>Patente</label>
+      <input id="v-plate" placeholder="AB123CD">
+      <label>Marca</label>
+      <input id="v-brand" placeholder="Toyota">
+      <label>Modelo</label>
+      <input id="v-model" placeholder="Hilux">
+      <label>Cliente</label>
+      <input id="v-client" placeholder="Nombre del cliente">
+      <label>Kilometraje actual</label>
+      <input id="v-km" type="number">
+      <button onclick="crearVehiculo()">Guardar vehículo</button>
+      <p class="msg-ok" id="v-msg"></p>
+    </div>
+
+    <div class="card">
+      <h3>Cargar servicio</h3>
+      <label>Vehículo (patente)</label>
+      <input id="s-plate" placeholder="AB123CD">
+      <button class="secondary" onclick="buscarVehiculo()">Buscar</button>
+      <p id="s-found"></p>
+
+      <label>Tipo de servicio</label>
+      <select id="s-type">
+        <option>Service general</option>
+        <option>Cambio de aceite de motor</option>
+        <option>Cambio de aceite de caja</option>
+        <option>Cambio de filtro</option>
+        <option>Mantenimiento de motor</option>
+        <option>Otro</option>
+      </select>
+      <label>Kilometraje al momento del servicio</label>
+      <input id="s-km" type="number">
+      <label>Próximo cambio sugerido (km)</label>
+      <input id="s-nextkm" type="number">
+      <label>Observaciones</label>
+      <textarea id="s-obs" placeholder="Qué hay que revisar o cambiar a futuro..."></textarea>
+      <button onclick="crearServicio()">Guardar servicio</button>
+      <p class="msg-ok" id="s-msg"></p>
+      <p class="error" id="s-error"></p>
+    </div>
+
+    <button class="secondary" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+</div>
+<script src="admin.js"></script>
+</body>
+</html>

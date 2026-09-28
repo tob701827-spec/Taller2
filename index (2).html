@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Consulta de mi vehículo</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div class="container">
+
+  <h1>Historial de mi vehículo</h1>
+  <p class="subtitle">Ingresá la patente para ver el historial de servicios</p>
+
+  <div class="card">
+    <label>Patente</label>
+    <input id="plate" placeholder="AB123CD">
+    <button onclick="buscar()">Consultar</button>
+    <p class="error" id="error"></p>
+  </div>
+
+  <div class="card hidden" id="vehiculo-card">
+    <h3 id="v-titulo"></h3>
+    <p id="v-km"></p>
+  </div>
+
+  <div id="lista-servicios"></div>
+
+</div>
+<script src="client.js"></script>
+</body>
+</html>
