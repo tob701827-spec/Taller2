@@ -63,7 +63,7 @@ async function cerrarSesion() {
 
 async function consultarVehiculoCliente(event) {
     if (event) event.preventDefault();
-    const matricula = document.getElementById('input-matricula').value.trim();
+   const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
     if (!matricula) return;
 
     const { data: vehiculo } = await dbClient
@@ -77,10 +77,10 @@ async function consultarVehiculoCliente(event) {
         return;
     }
 
-    document.getElementById('cliente-info-vehiculo').innerHTML = `
-        <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
-        <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
-    `;
+ddocument.getElementById('cliente-info-vehiculo').innerHTML = `
+    <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
+    <p><strong>Vehículo:</strong> ${vehiculo.marca \vert{}\vert{} ''}${vehiculo.modelo || ''}</p>
+`;
 
     const { data: ordenes } = await dbClient
         .from('ordenes_trabajo')
@@ -145,3 +145,13 @@ async function guardarOrdenAdmin(event) {
                 trabajo_realizado: 'Pendiente de revisión',
                 fecha_ingreso: new Date().toISOString().split('T')[0] 
             }]);
+            if (errOrden) throw errOrden;
+
+        alert('¡Vehículo y orden registrados exitosamente en la base de datos!');
+        document.getElementById('form-nueva-orden').reset();
+
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert('Error al guardar en Supabase: ' + error.message);
+    }
+}
