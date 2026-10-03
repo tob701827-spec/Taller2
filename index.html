@@ -22,7 +22,7 @@
             <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
         </header>
 
-        <div class="card" style="max-width: 750px; margin: 0 auto;">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
             <h3>🚗 Consulta de Cliente</h3>
             <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
             <form id="form-consulta" onsubmit="consultarVehiculoCliente(event)">
@@ -34,18 +34,20 @@
             </form>
 
             <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-                <div id="cliente-info-vehiculo"></div>
-                <h4 style="margin-top: 15px; color: #0d47a1;">Historial de Trabajos:</h4>
+                <!-- Tarjeta Destacada de Datos -->
+                <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
+
+                <h4 style="margin-top: 15px; color: #0d47a1;">📋 Historial de Trabajos Realizados:</h4>
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
                         <thead>
-                            <tr style="background: #f1f5f9; text-align: left;">
-                                <th style="padding: 8px;">Fecha</th>
-                                <th style="padding: 8px;">Km</th>
-                                <th style="padding: 8px;">Motivo / Falla</th>
-                                <th style="padding: 8px;">DTC</th>
-                                <th style="padding: 8px;">Trabajo Realizado</th>
-                                <th style="padding: 8px;">Fotos</th>
+                            <tr style="background: #0d47a1; color: white; text-align: left;">
+                                <th style="padding: 10px;">Fecha</th>
+                                <th style="padding: 10px;">Km</th>
+                                <th style="padding: 10px;">Motivo / Falla</th>
+                                <th style="padding: 10px;">DTC</th>
+                                <th style="padding: 10px;">Trabajo Realizado</th>
+                                <th style="padding: 10px;">Fotografías</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-cliente-historial"></tbody>
@@ -56,7 +58,7 @@
     </div>
 
     <!-- VISTA 2: PANEL DE ADMINISTRACIÓN (TALLER) -->
-    <div id="vista-admin" style="display: none; max-width: 1000px; margin: 40px auto; padding: 20px;">
+    <div id="vista-admin" style="display: none; max-width: 1100px; margin: 40px auto; padding: 20px;">
         <header class="portal-header">
             <h1>PANEL DE <span>ADMINISTRACIÓN</span></h1>
             <p>SISTEMA DE GESTIÓN DEL TALLER</p>
@@ -70,7 +72,8 @@
             <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
 
-        <div class="card">
+        <!-- FORMULARIO DE REGISTRO -->
+        <div class="card" style="margin-bottom: 30px;">
             <h3>📝 Registrar Nuevo Vehículo / Orden</h3>
             <form id="form-nueva-orden" onsubmit="guardarOrdenAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
                 <div class="input-group">
@@ -117,6 +120,31 @@
                     <button type="submit" class="btn-primary">Guardar Registro</button>
                 </div>
             </form>
+        </div>
+
+        <!-- BASE DE DATOS Y GESTIÓN DE ÓRDENES -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>🗂️ Registro General de Vehículos / Base de Datos</h3>
+                <button type="button" class="btn-secondary" onclick="cargarOrdenesAdmin()">🔄 Actualizar Listado</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background: #1e293b; color: white; text-align: left;">
+                            <th style="padding: 10px;">Cliente</th>
+                            <th style="padding: 10px;">Matrícula</th>
+                            <th style="padding: 10px;">Vehículo</th>
+                            <th style="padding: 10px;">Km</th>
+                            <th style="padding: 10px;">Falla / Motivo</th>
+                            <th style="padding: 10px;">Estado / Trabajo</th>
+                            <th style="padding: 10px;">Fotos</th>
+                            <th style="padding: 10px; text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-admin-ordenes"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 

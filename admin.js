@@ -22,6 +22,9 @@ async function verificarSesion() {
         if (adminEmail) adminEmail.textContent = session.user.email;
         if (btnLoginModal) btnLoginModal.style.display = 'none';
         if (btnLogoutHead) btnLogoutHead.style.display = 'inline-block';
+        
+        // Cargar tabla general de administración
+        cargarOrdenesAdmin();
     } else {
         if (vistaPortal) vistaPortal.style.display = 'block';
         if (vistaAdmin) vistaAdmin.style.display = 'none';
@@ -84,11 +87,15 @@ async function consultarVehiculoCliente(event) {
             return;
         }
 
+        // Tarjeta del cliente estilizada
         document.getElementById('cliente-info-vehiculo').innerHTML = `
-            <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
-            <p><strong>Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</p>
-            <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
-            <p><strong>Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div><strong>👤 Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</div>
+                <div><strong>📞 Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</div>
+                <div><strong>🚘 Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</div>
+                <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${vehiculo.matricula}</span></div>
+                <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</div>
+            </div>
         `;
 
         const { data: ordenes, error: errOrdenes } = await dbClient
@@ -96,30 +103,32 @@ async function consultarVehiculoCliente(event) {
             .select('*')
             .eq('vehiculo_id', vehiculo.id);
 
-        if (errOrdenes) {
-            console.error("Error al buscar historial:", errOrdenes);
-        }
+        if (errOrdenes) console.error("Error al buscar historial:", errOrdenes);
 
         const tbody = document.getElementById('tabla-cliente-historial');
         tbody.innerHTML = '';
 
         if (!ordenes || ordenes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="padding: 10px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
         } else {
             ordenes.forEach(o => {
                 let fotosHtml = '-';
                 if (o.fotos && o.fotos.length > 0) {
-                    fotosHtml = o.fotos.map(url => `<a href="${url}" target="_blank" style="margin-right: 5px;">🖼️ Ver</a>`).join('');
+                    fotosHtml = o.fotos.map(url => `
+                        <a href="${url}" target="_blank" style="display: inline-block; margin: 2px;">
+                            <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" title="Haz clic para ver foto en grande" />
+                        </a>
+                    `).join('');
                 }
 
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 8px;">${o.fecha_ingreso || '-'}</td>
-                        <td style="padding: 8px;">${o.kilometraje || '-'}</td>
-                        <td style="padding: 8px;">${o.motivo || '-'}</td>
-                        <td style="padding: 8px;">${o.dtc || '-'}</td>
-                        <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
-                        <td style="padding: 8px;">${fotosHtml}</td>
+                        <td style="padding: 10px;">${o.fecha_ingreso || '-'}</td>
+                        <td style="padding: 10px;">${o.kilometraje || '-'} km</td>
+                        <td style="padding: 10px;">${o.motivo || '-'}</td>
+                        <td style="padding: 10px;">${o.dtc || '-'}</td>
+                        <td style="padding: 10px;"><strong>${o.trabajo_realizado || '-'}</strong></td>
+                        <td style="padding: 10px;">${fotosHtml}</td>
                     </tr>
                 `;
             });
@@ -132,6 +141,7 @@ async function consultarVehiculoCliente(event) {
         alert("Ocurrió un error inesperado al realizar la búsqueda.");
     }
 }
+
 async function guardarOrdenAdmin(event) {
     if (event) event.preventDefault();
 
@@ -147,7 +157,6 @@ async function guardarOrdenAdmin(event) {
     const inputFotos = document.getElementById('admin-fotos');
 
     try {
-        // Subir imágenes si se seleccionaron
         let fotosUrls = [];
         if (inputFotos && inputFotos.files.length > 0) {
             for (let i = 0; i < inputFotos.files.length; i++) {
@@ -191,7 +200,7 @@ async function guardarOrdenAdmin(event) {
 
         if (errVehiculo) throw errVehiculo;
 
-        // 3. Crear orden de trabajo
+        // 3. Crear orden
         const { error: errOrden } = await dbClient
             .from('ordenes_trabajo')
             .insert([{ 
@@ -207,11 +216,109 @@ async function guardarOrdenAdmin(event) {
 
         if (errOrden) throw errOrden;
 
-        alert('¡Vehículo, orden y fotografías guardados exitosamente!');
+        alert('¡Vehículo y orden guardados exitosamente!');
         document.getElementById('form-nueva-orden').reset();
+        cargarOrdenesAdmin(); // Refrescar la tabla
 
     } catch (error) {
         console.error("Error al guardar:", error);
         alert('Error al guardar en Supabase: ' + error.message);
+    }
+}
+
+// CARGAR LISTADO GENERAL DE ADMINISTRACIÓN (BASE DE DATOS)
+async function cargarOrdenesAdmin() {
+    const tbody = document.getElementById('tabla-admin-ordenes');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center;">Cargando lista de vehículos...</td></tr>';
+
+    try {
+        const { data: ordenes, error } = await dbClient
+            .from('ordenes_trabajo')
+            .select('*, vehiculos(*, clientes(*))')
+            .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        tbody.innerHTML = '';
+
+        if (!ordenes || ordenes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center;">No hay vehículos registrados en la base de datos.</td></tr>';
+            return;
+        }
+
+        ordenes.forEach(o => {
+            const v = o.vehiculos || {};
+            const c = v.clientes || {};
+
+            let fotosHtml = '-';
+            if (o.fotos && o.fotos.length > 0) {
+                fotosHtml = o.fotos.map(url => `
+                    <a href="${url}" target="_blank">
+                        <img src="${url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 2px;" title="Ver foto" />
+                    </a>
+                `).join('');
+            }
+
+            tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px;"><strong>${c.nombre || 'N/A'}</strong><br><small>${c.telefono || ''}</small></td>
+                    <td style="padding: 8px;"><span style="background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-weight: bold;">${v.matricula || '-'}</span></td>
+                    <td style="padding: 8px;">${v.marca || '-'}</td>
+                    <td style="padding: 8px;">${o.kilometraje || '-'}</td>
+                    <td style="padding: 8px;">${o.motivo || '-'}</td>
+                    <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
+                    <td style="padding: 8px;">${fotosHtml}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        <button style="background: #2563eb; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 3px;" onclick="editarOrdenAdmin('${o.id}', '${o.trabajo_realizado || ''}')">✏️ Editar</button>
+                        <button style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Error al cargar lista:", err);
+        tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
+    }
+}
+
+// EDITAR ORDEN
+async function editarOrdenAdmin(ordenId, trabajoActual) {
+    const nuevoTrabajo = prompt("Actualizar estado / Trabajo realizado:", trabajoActual);
+    if (nuevoTrabajo === null) return; // Cancelado
+
+    try {
+        const { error } = await dbClient
+            .from('ordenes_trabajo')
+            .update({ trabajo_realizado: nuevoTrabajo })
+            .eq('id', ordenId);
+
+        if (error) throw error;
+
+        alert('¡Orden actualizada correctamente!');
+        cargarOrdenesAdmin();
+    } catch (err) {
+        alert('Error al actualizar: ' + err.message);
+    }
+}
+
+// ELIMINAR ORDEN
+async function eliminarOrdenAdmin(ordenId) {
+    if (!confirm("¿Estás seguro de que deseas eliminar este registro del taller?")) return;
+
+    try {
+        const { error } = await dbClient
+            .from('ordenes_trabajo')
+            .delete()
+            .eq('id', ordenId);
+
+        if (error) throw error;
+
+        alert('¡Registro eliminado de la base de datos!');
+        cargarOrdenesAdmin();
+    } catch (err) {
+        alert('Error al eliminar: ' + err.message);
     }
 }
