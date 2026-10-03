@@ -128,6 +128,7 @@ async function guardarOrdenAdmin(event) {
             .insert([{ 
                 cliente_id: cliente.id, 
                 matricula: matricula, 
+                marca: vehiculoDetalle,
                 modelo: vehiculoDetalle 
             }])
             .select()
