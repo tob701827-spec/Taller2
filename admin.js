@@ -105,5 +105,52 @@ async function consultarVehiculoCliente(event) {
 
 async function guardarOrdenAdmin(event) {
     if (event) event.preventDefault();
-    alert('¡Formulario recibido en el panel admin!');
+
+    const nombre = document.getElementById('admin-nombre-cliente').value.trim();
+    const telefono = document.getElementById('admin-telefono').value.trim();
+    const matricula = document.getElementById('admin-matricula').value.trim().toUpperCase();
+    const vehiculoDetalle = document.getElementById('admin-vehiculo').value.trim();
+    const motivo = document.getElementById('admin-motivo').value.trim();
+
+    try {
+        // 1. Insertar el cliente en la tabla 'clientes'
+        const { data: cliente, error: errCliente } = await dbClient
+            .from('clientes')
+            .insert([{ nombre: nombre, telefono: telefono }])
+            .select()
+            .single();
+
+        if (errCliente) throw errCliente;
+
+        // 2. Insertar el vehículo vinculado al cliente
+        const { data: vehiculo, error: errVehiculo } = await dbClient
+            .from('vehiculos')
+            .insert([{ 
+                cliente_id: cliente.id, 
+                matricula: matricula, 
+                modelo: vehiculoDetalle 
+            }])
+            .select()
+            .single();
+
+        if (errVehiculo) throw errVehiculo;
+
+        // 3. Crear la orden de trabajo para ese vehículo
+        const { error: errOrden } = await dbClient
+            .from('ordenes_trabajo')
+            .insert([{ 
+                vehiculo_id: vehiculo.id, 
+                motivo: motivo, 
+                fecha_ingreso: new Date().toISOString().split('T')[0] 
+            }]);
+
+        if (errOrden) throw errOrden;
+
+        alert('¡Vehículo y orden registrados exitosamente en la base de datos!');
+        document.getElementById('form-nueva-orden').reset();
+
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert('Error al guardar en Supabase: ' + error.message);
+    }
 }
