@@ -9,72 +9,114 @@
 </head>
 <body>
 
-    <!-- BOTÓN DE ACCESO ADMIN EN LA ESQUINA SUPERIOR DERECHA -->
-    <div style="position: absolute; top: 20px; right: 20px;">
-        <button type="button" class="btn-secondary" onclick="abrirModalAdmin()" style="font-size: 0.85rem;">
-            🔐 Acceso Admin
-        </button>
+    <!-- BOTÓN DE ACCESO / CERRAR SESIÓN -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 100;">
+        <button id="btn-login-modal" type="button" class="btn-secondary" onclick="abrirModalAdmin()">Acceso Admin</button>
+        <button id="btn-logout-head" type="button" class="btn-secondary" style="display: none;" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
     <!-- VISTA 1: PORTAL PÚBLICO DEL CLIENTE -->
     <div id="vista-portal" class="portal-container">
-       <header class="portal-header">
-    <!-- Muestra la tarjeta o logo que me enviaste -->
-     <img src="taller.png" alt="Automecánica Cañete Hermanos" style="max-width: 250px; width: 100%; margin-bottom: 15px;">
-    
-    <h1>AUTOMECANICA <span>CAÑETE HERMANOS</span></h1>
-    <p>Especialistas en Reparación de Cajas Automáticas</p>
-</header>
+        <header class="portal-header">
+            <h1>AUTOMECANICA <span>CAÑETE HERMANOS</span></h1>
+            <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
+        </header>
 
-        <!-- Única tarjeta para el cliente -->
-        <div class="card portal-card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
             <h3>🚗 Consulta de Cliente</h3>
             <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
-            <form id="form-consulta">
+            <form id="form-consulta" onsubmit="consultarVehiculoCliente(event)">
                 <div class="input-group">
                     <label for="input-matricula">Matrícula / Patente</label>
                     <input type="text" id="input-matricula" placeholder="Ej: ABC-123" required>
                 </div>
                 <button type="submit" class="btn-primary" style="width: 100%;">Buscar Vehículo</button>
             </form>
+
+            <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+                <div id="cliente-info-vehiculo"></div>
+                <h4 style="margin-top: 15px; color: #0d47a1;">Historial de Trabajos:</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left;">
+                            <th style="padding: 8px;">Fecha</th>
+                            <th style="padding: 8px;">Motivo</th>
+                            <th style="padding: 8px;">Trabajo Realizado</th>
+                            <th style="padding: 8px;">Diagnóstico</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-cliente-historial"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL EMERGENTE PARA LOGIN DE ADMINISTRADOR (Oculto por defecto) -->
-    <div id="modal-admin-login" class="modal" style="display: none;">
-        <div class="modal-content" style="position: relative;">
-            <!-- Botón para cerrar la ventanita -->
-            <button onclick="cerrarModalAdmin()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
-            
-            <h3>🔐 Acceso Administrador</h3>
-            <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Ingresa tus credenciales para acceder al panel.</p>
-            
-            <form id="form-login" onsubmit="event.preventDefault(); iniciarSesion();">
+    <!-- VISTA 2: PANEL DE ADMINISTRACIÓN (TALLER) -->
+    <div id="vista-admin" style="display: none; max-width: 1000px; margin: 40px auto; padding: 20px;">
+        <header class="portal-header">
+            <h1>PANEL DE <span>ADMINISTRACIÓN</span></h1>
+            <p>SISTEMA DE GESTIÓN DEL TALLER</p>
+        </header>
+
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin: 0; color: #0d47a1;">Bienvenido, Administrador</h3>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem;">Sesión iniciada como: <strong id="admin-user-email">--</strong></p>
+            </div>
+            <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+
+        <div class="card">
+            <h3>📝 Registrar Nuevo Vehículo / Orden</h3>
+            <form id="form-nueva-orden" onsubmit="guardarOrdenAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
                 <div class="input-group">
-                    <label for="auth-email">Correo Electrónico</label>
-                    <input type="email" id="auth-email" placeholder="admin@taller.com" required>
+                    <label>Cliente / Nombre</label>
+                    <input type="text" id="admin-nombre-cliente" placeholder="Nombre completo" required>
                 </div>
                 <div class="input-group">
-                    <label for="auth-password">Contraseña</label>
-                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                    <label>Teléfono</label>
+                    <input type="text" id="admin-telefono" placeholder="Ej: 0981123456">
                 </div>
-                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <div class="input-group">
+                    <label>Matrícula / Patente</label>
+                    <input type="text" id="admin-matricula" placeholder="Ej: ABC123" required>
+                </div>
+                <div class="input-group">
+                    <label>Marca y Modelo</label>
+                    <input type="text" id="admin-vehiculo" placeholder="Ej: Toyota Corolla 2018">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Motivo de Ingreso / Falla</label>
+                    <input type="text" id="admin-motivo" placeholder="Ej: Golpeteo en cambio de marcha" required>
+                </div>
+                <div style="grid-column: span 2; text-align: right;">
+                    <button type="submit" class="btn-primary">Guardar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN ADMIN -->
+    <div id="modal-admin" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: #0d47a1;">Ingreso Administrativo</h3>
+            <form id="form-login" onsubmit="iniciarSesion(event)">
+                <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="login-email" required placeholder="admin@ejemplo.com">
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button type="button" class="btn-secondary" onclick="cerrarModalAdmin()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                    <button type="submit" class="btn-primary">Ingresar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script src="admin.js"></script>
-    <script>
-        // Funciones auxiliares para abrir/cerrar la ventanita de admin
-        function abrirModalAdmin() {
-            document.getElementById('modal-admin-login').style.display = 'flex';
-        }
-        function cerrarModalAdmin() {
-            document.getElementById('modal-admin-login').style.display = 'none';
-        }
-    </script>
 </body>
 </html>
