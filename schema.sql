@@ -57,3 +57,10 @@ USING (bucket_id = 'vehiculos');
 CREATE POLICY "Permitir eliminación de imágenes" 
 ON storage.objects FOR DELETE 
 USING (bucket_id = 'vehiculos');
+ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vehiculos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ordenes_trabajo ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Permitir lectura pública de vehículos" ON vehiculos FOR SELECT USING (true);
+CREATE POLICY "Permitir lectura pública de clientes" ON clientes FOR SELECT USING (true);
+CREATE POLICY "Permitir lectura pública de órdenes" ON ordenes_trabajo FOR SELECT USING (true);

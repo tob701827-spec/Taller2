@@ -22,7 +22,7 @@
             <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
         </header>
 
-        <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <div class="card" style="max-width: 850px; margin: 0 auto;">
             <h3>🚗 Consulta de Cliente</h3>
             <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
             <form id="form-consulta" onsubmit="consultarVehiculoCliente(event)">
@@ -34,10 +34,10 @@
             </form>
 
             <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-                <!-- Tarjeta Destacada de Datos -->
-                <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
+                <!-- Tarjeta Destacada -->
+                <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px;"></div>
 
-                <h4 style="margin-top: 15px; color: #0d47a1;">📋 Historial de Trabajos Realizados:</h4>
+                <h4 style="margin-top: 15px; color: #0d47a1;">📋 Historial de Trabajos:</h4>
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
                         <thead>
@@ -47,7 +47,7 @@
                                 <th style="padding: 10px;">Motivo / Falla</th>
                                 <th style="padding: 10px;">DTC</th>
                                 <th style="padding: 10px;">Trabajo Realizado</th>
-                                <th style="padding: 10px;">Fotografías</th>
+                                <th style="padding: 10px;">Fotografía</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-cliente-historial"></tbody>
@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    <!-- VISTA 2: PANEL DE ADMINISTRACIÓN (TALLER) -->
+    <!-- VISTA 2: PANEL DE ADMINISTRACIÓN -->
     <div id="vista-admin" style="display: none; max-width: 1100px; margin: 40px auto; padding: 20px;">
         <header class="portal-header">
             <h1>PANEL DE <span>ADMINISTRACIÓN</span></h1>
@@ -72,8 +72,14 @@
             <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
 
-        <!-- FORMULARIO DE REGISTRO -->
-        <div class="card" style="margin-bottom: 30px;">
+        <!-- BOTONES DE NAVEGACIÓN ADMINISTRADOR -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button id="btn-tab-registro" type="button" class="btn-primary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('registro')">📝 Registrar Nuevo Vehículo</button>
+            <button id="btn-tab-historial" type="button" class="btn-secondary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('historial')">🗂️ Ver Historial y Base de Datos</button>
+        </div>
+
+        <!-- PESTAÑA 1: FORMULARIO DE REGISTRO -->
+        <div id="pestana-registro" class="card">
             <h3>📝 Registrar Nuevo Vehículo / Orden</h3>
             <form id="form-nueva-orden" onsubmit="guardarOrdenAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
                 <div class="input-group">
@@ -122,10 +128,10 @@
             </form>
         </div>
 
-        <!-- BASE DE DATOS Y GESTIÓN DE ÓRDENES -->
-        <div class="card">
+        <!-- PESTAÑA 2: HISTORIAL Y BASE DE DATOS -->
+        <div id="pestana-historial" class="card" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>🗂️ Registro General de Vehículos / Base de Datos</h3>
+                <h3>🗂️ Registro General del Taller</h3>
                 <button type="button" class="btn-secondary" onclick="cargarOrdenesAdmin()">🔄 Actualizar Listado</button>
             </div>
             <div style="overflow-x: auto;">
@@ -136,9 +142,9 @@
                             <th style="padding: 10px;">Matrícula</th>
                             <th style="padding: 10px;">Vehículo</th>
                             <th style="padding: 10px;">Km</th>
-                            <th style="padding: 10px;">Falla / Motivo</th>
-                            <th style="padding: 10px;">Estado / Trabajo</th>
-                            <th style="padding: 10px;">Fotos</th>
+                            <th style="padding: 10px;">Falla</th>
+                            <th style="padding: 10px;">Trabajo Realizado</th>
+                            <th style="padding: 10px;">Fotografía</th>
                             <th style="padding: 10px; text-align: center;">Acciones</th>
                         </tr>
                     </thead>
