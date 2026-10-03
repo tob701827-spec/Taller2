@@ -23,13 +23,32 @@ async function verificarSesion() {
         if (btnLoginModal) btnLoginModal.style.display = 'none';
         if (btnLogoutHead) btnLogoutHead.style.display = 'inline-block';
         
-        // Cargar tabla general de administración
         cargarOrdenesAdmin();
     } else {
         if (vistaPortal) vistaPortal.style.display = 'block';
         if (vistaAdmin) vistaAdmin.style.display = 'none';
         if (btnLoginModal) btnLoginModal.style.display = 'inline-block';
         if (btnLogoutHead) btnLogoutHead.style.display = 'none';
+    }
+}
+
+function cambiarPestanaAdmin(pestana) {
+    const reg = document.getElementById('pestana-registro');
+    const hist = document.getElementById('pestana-historial');
+    const btnReg = document.getElementById('btn-tab-registro');
+    const btnHist = document.getElementById('btn-tab-historial');
+
+    if (pestana === 'registro') {
+        reg.style.display = 'block';
+        hist.style.display = 'none';
+        btnReg.className = 'btn-primary';
+        btnHist.className = 'btn-secondary';
+    } else {
+        reg.style.display = 'none';
+        hist.style.display = 'block';
+        btnReg.className = 'btn-secondary';
+        btnHist.className = 'btn-primary';
+        cargarOrdenesAdmin();
     }
 }
 
@@ -87,7 +106,6 @@ async function consultarVehiculoCliente(event) {
             return;
         }
 
-        // Tarjeta del cliente estilizada
         document.getElementById('cliente-info-vehiculo').innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div><strong>👤 Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</div>
@@ -112,12 +130,14 @@ async function consultarVehiculoCliente(event) {
             tbody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
         } else {
             ordenes.forEach(o => {
-                let fotosHtml = '-';
+                let fotosHtml = 'Sin foto';
                 if (o.fotos && o.fotos.length > 0) {
                     fotosHtml = o.fotos.map(url => `
-                        <a href="${url}" target="_blank" style="display: inline-block; margin: 2px;">
-                            <img src="${url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" title="Haz clic para ver foto en grande" />
-                        </a>
+                        <div style="margin: 5px 0;">
+                            <a href="${url}" target="_blank">
+                                <img src="${url}" style="max-width: 160px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Haz clic para ver imagen completa" />
+                            </a>
+                        </div>
                     `).join('');
                 }
 
@@ -176,7 +196,6 @@ async function guardarOrdenAdmin(event) {
             }
         }
 
-        // 1. Insertar cliente
         const { data: cliente, error: errCliente } = await dbClient
             .from('clientes')
             .insert([{ nombre: nombre, telefono: telefono }])
@@ -185,7 +204,6 @@ async function guardarOrdenAdmin(event) {
 
         if (errCliente) throw errCliente;
 
-        // 2. Insertar vehículo
         const { data: vehiculo, error: errVehiculo } = await dbClient
             .from('vehiculos')
             .insert([{ 
@@ -200,7 +218,6 @@ async function guardarOrdenAdmin(event) {
 
         if (errVehiculo) throw errVehiculo;
 
-        // 3. Crear orden
         const { error: errOrden } = await dbClient
             .from('ordenes_trabajo')
             .insert([{ 
@@ -216,9 +233,8 @@ async function guardarOrdenAdmin(event) {
 
         if (errOrden) throw errOrden;
 
-        alert('¡Vehículo y orden guardados exitosamente!');
+        alert('¡Vehículo registrado con éxito!');
         document.getElementById('form-nueva-orden').reset();
-        cargarOrdenesAdmin(); // Refrescar la tabla
 
     } catch (error) {
         console.error("Error al guardar:", error);
@@ -226,7 +242,6 @@ async function guardarOrdenAdmin(event) {
     }
 }
 
-// CARGAR LISTADO GENERAL DE ADMINISTRACIÓN (BASE DE DATOS)
 async function cargarOrdenesAdmin() {
     const tbody = document.getElementById('tabla-admin-ordenes');
     if (!tbody) return;
@@ -252,11 +267,11 @@ async function cargarOrdenesAdmin() {
             const v = o.vehiculos || {};
             const c = v.clientes || {};
 
-            let fotosHtml = '-';
+            let fotosHtml = 'Sin foto';
             if (o.fotos && o.fotos.length > 0) {
                 fotosHtml = o.fotos.map(url => `
                     <a href="${url}" target="_blank">
-                        <img src="${url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 2px;" title="Ver foto" />
+                        <img src="${url}" style="width: 70px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" title="Haz clic para ampliar" />
                     </a>
                 `).join('');
             }
@@ -271,8 +286,8 @@ async function cargarOrdenesAdmin() {
                     <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
                     <td style="padding: 8px;">${fotosHtml}</td>
                     <td style="padding: 8px; text-align: center;">
-                        <button style="background: #2563eb; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-right: 3px;" onclick="editarOrdenAdmin('${o.id}', '${o.trabajo_realizado || ''}')">✏️ Editar</button>
-                        <button style="background: #dc2626; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar</button>
+                        <button style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 3px;" onclick="editarOrdenAdmin('${o.id}', '${o.trabajo_realizado || ''}')">✏️ Editar</button>
+                        <button style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar</button>
                     </td>
                 </tr>
             `;
@@ -284,10 +299,9 @@ async function cargarOrdenesAdmin() {
     }
 }
 
-// EDITAR ORDEN
 async function editarOrdenAdmin(ordenId, trabajoActual) {
-    const nuevoTrabajo = prompt("Actualizar estado / Trabajo realizado:", trabajoActual);
-    if (nuevoTrabajo === null) return; // Cancelado
+    const nuevoTrabajo = prompt("Actualizar trabajo realizado / estado del vehículo:", trabajoActual);
+    if (nuevoTrabajo === null) return;
 
     try {
         const { error } = await dbClient
@@ -304,7 +318,6 @@ async function editarOrdenAdmin(ordenId, trabajoActual) {
     }
 }
 
-// ELIMINAR ORDEN
 async function eliminarOrdenAdmin(ordenId) {
     if (!confirm("¿Estás seguro de que deseas eliminar este registro del taller?")) return;
 
