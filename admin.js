@@ -142,16 +142,6 @@ async function guardarOrdenAdmin(event) {
             .insert([{ 
                 vehiculo_id: vehiculo.id, 
                 motivo: motivo, 
+                trabajo_realizado: 'Pendiente de revisión',
                 fecha_ingreso: new Date().toISOString().split('T')[0] 
             }]);
-
-        if (errOrden) throw errOrden;
-
-        alert('¡Vehículo y orden registrados exitosamente en la base de datos!');
-        document.getElementById('form-nueva-orden').reset();
-
-    } catch (error) {
-        console.error("Error al guardar:", error);
-        alert('Error al guardar en Supabase: ' + error.message);
-    }
-}
