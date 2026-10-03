@@ -76,10 +76,9 @@ async function consultarVehiculoCliente(event) {
         alert('No se encontró ningún vehículo registrado con esa matrícula.');
         return;
     }
-
-ddocument.getElementById('cliente-info-vehiculo').innerHTML = `
+document.getElementById('cliente-info-vehiculo').innerHTML = `
     <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
-    <p><strong>Vehículo:</strong> ${vehiculo.marca \vert{}\vert{} ''}${vehiculo.modelo || ''}</p>
+    <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
 `;
 
     const { data: ordenes } = await dbClient
