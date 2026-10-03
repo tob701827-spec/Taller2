@@ -1,284 +1,80 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AUTOMECANICA CAÑETE HERMANOS</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTOMECANICA CAÑETE HERMANOS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="app-container">
+
+    <!-- BOTÓN DE ACCESO ADMIN EN LA ESQUINA SUPERIOR DERECHA -->
+    <div style="position: absolute; top: 20px; right: 20px;">
+        <button type="button" class="btn-secondary" onclick="abrirModalAdmin()" style="font-size: 0.85rem;">
+            🔐 Acceso Admin
+        </button>
+    </div>
+
+    <!-- VISTA 1: PORTAL PÚBLICO DEL CLIENTE -->
+    <div id="vista-portal" class="portal-container">
+       <header class="portal-header">
+    <!-- Muestra la tarjeta o logo que me enviaste -->
+     <img src="taller.png" alt="Automecánica Cañete Hermanos" style="max-width: 250px; width: 100%; margin-bottom: 15px;">
     
-    <!-- BARRA LATERAL (SIDEBAR) -->
-    <aside class="sidebar">
-      <div class="brand">
-        <i data-lucide="wrench"></i>
-        <div class="brand-text">
-          <h2>AUTOMECANICA</h2>
-          <h1>CAÑETE HERMANOS</h1>
+    <h1>AUTOMECANICA <span>CAÑETE HERMANOS</span></h1>
+    <p>Especialistas en Reparación de Cajas Automáticas</p>
+</header>
+
+        <!-- Única tarjeta para el cliente -->
+        <div class="card portal-card" style="max-width: 600px; margin: 0 auto;">
+            <h3>🚗 Consulta de Cliente</h3>
+            <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
+            <form id="form-consulta">
+                <div class="input-group">
+                    <label for="input-matricula">Matrícula / Patente</label>
+                    <input type="text" id="input-matricula" placeholder="Ej: ABC-123" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Buscar Vehículo</button>
+            </form>
         </div>
-      </div>
+    </div>
 
-      <nav class="nav-menu">
-        <a href="#" class="nav-item active"><i data-lucide="home"></i> Inicio</a>
-        <a href="#" class="nav-item"><i data-lucide="user"></i> Clientes</a>
-        <a href="#" class="nav-item"><i data-lucide="car"></i> Vehículos</a>
-        <a href="#" class="nav-item"><i data-lucide="file-text"></i> Órdenes de trabajo</a>
-        <a href="#" class="nav-item"><i data-lucide="history"></i> Historial</a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="car-illustration">
-          <i data-lucide="car" class="car-icon"></i>
-          <p>Tu vehículo<br>en buenas manos</p>
+    <!-- MODAL EMERGENTE PARA LOGIN DE ADMINISTRADOR (Oculto por defecto) -->
+    <div id="modal-admin-login" class="modal" style="display: none;">
+        <div class="modal-content" style="position: relative;">
+            <!-- Botón para cerrar la ventanita -->
+            <button onclick="cerrarModalAdmin()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+            
+            <h3>🔐 Acceso Administrador</h3>
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Ingresa tus credenciales para acceder al panel.</p>
+            
+            <form id="form-login" onsubmit="event.preventDefault(); iniciarSesion();">
+                <div class="input-group">
+                    <label for="auth-email">Correo Electrónico</label>
+                    <input type="email" id="auth-email" placeholder="admin@taller.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="auth-password">Contraseña</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="cerrarModalAdmin()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                </div>
+            </form>
         </div>
-      </div>
-    </aside>
+    </div>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-content">
-      
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="topbar-date">
-          <i data-lucide="calendar"></i>
-          <span id="current-date">Lun, 29 de Sep de 2026</span>
-        </div>
-        <div class="topbar-user">
-          <i data-lucide="user-check"></i>
-          <span>Admin</span>
-          <i data-lucide="chevron-down"></i>
-        </div>
-      </header>
-
-      <!-- ÁREA DE DASHBOARD -->
-      <div class="dashboard-body">
-        
-        <!-- HEADER DE LA PÁGINA Y BÚSQUEDA RÁPIDA -->
-        <div class="page-header">
-          <div class="header-title">
-            <i data-lucide="car" class="header-icon"></i>
-            <div>
-              <h2>Nuevo vehículo / Nuevo trabajo</h2>
-              <p>Registra los datos del vehículo y el trabajo realizado</p>
-            </div>
-          </div>
-          
-          <div class="search-box">
-            <div class="search-input-wrapper">
-              <i data-lucide="search"></i>
-              <input type="text" id="global-search" placeholder="Buscar por matrícula...">
-            </div>
-            <button class="btn-search" onclick="buscarPorMatricula()">Buscar</button>
-          </div>
-        </div>
-
-        <!-- FORMULARIO PRINCIPAL EN DOS COLUMNAS -->
-        <div class="grid-container">
-          
-          <!-- COLUMNA IZQUIERDA: DATOS DEL VEHÍCULO -->
-          <div class="column">
-            <div class="card">
-              <div class="card-title">
-                <i data-lucide="car"></i>
-                <h3>Datos del vehículo</h3>
-              </div>
-              
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Cliente *</label>
-                  <input type="text" id="v-client" placeholder="Seleccionar cliente">
-                </div>
-                <div class="form-group">
-                  <label>Teléfono</label>
-                  <input type="text" id="v-phone" placeholder="Ej: 0981 123 456">
-                </div>
-
-                <div class="form-group">
-                  <label>Matrícula *</label>
-                  <input type="text" id="v-plate" placeholder="Ej: ABC-123">
-                </div>
-                <div class="form-group">
-                  <label>Motor</label>
-                  <input type="text" id="v-motor" placeholder="Ej: 1.8">
-                </div>
-
-                <div class="form-group">
-                  <label>Marca *</label>
-                  <input type="text" id="v-brand" placeholder="Seleccionar marca">
-                </div>
-                <div class="form-group">
-                  <label>Kilometraje *</label>
-                  <div class="input-unit">
-                    <input type="number" id="v-km" placeholder="Ej: 185.000">
-                    <span class="unit">km</span>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label>Modelo *</label>
-                  <input type="text" id="v-model" placeholder="Ej: Corolla, Hilux, Wish">
-                </div>
-                <div class="form-group">
-                  <label>VIN / Chasis</label>
-                  <input type="text" id="v-vin" placeholder="Ej: ZNE10-0123456">
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Año *</label>
-                  <input type="text" id="v-year" placeholder="Ej: 2007">
-                </div>
-              </div>
-            </div>
-
-            <!-- HISTORIAL DEL VEHÍCULO -->
-            <div class="card margin-top">
-              <div class="card-header-flex">
-                <div class="card-title">
-                  <i data-lucide="clock"></i>
-                  <h3>Historial del vehículo</h3>
-                </div>
-                <a href="#" class="link-more">Ver todos &rarr;</a>
-              </div>
-
-              <div class="table-responsive">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Fecha ingreso</th>
-                      <th>Fecha entrega</th>
-                      <th>Kilometraje</th>
-                      <th>Diagnóstico / Trabajo realizado</th>
-                    </tr>
-                  </thead>
-                  <tbody id="history-table-body">
-                    <tr>
-                      <td colspan="4" class="empty-msg">Ingrese una matrícula para consultar el historial.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- COLUMNA DERECHA: TRABAJO REALIZADO -->
-          <div class="column">
-            <div class="card">
-              <div class="card-title">
-                <i data-lucide="wrench"></i>
-                <h3>Trabajo realizado</h3>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label>Fecha de ingreso *</label>
-                  <input type="date" id="t-entry-date">
-                </div>
-                <div class="form-group">
-                  <label>Fecha de entrega</label>
-                  <input type="date" id="t-delivery-date">
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Kilometraje *</label>
-                  <div class="input-unit">
-                    <input type="number" id="t-km" placeholder="185.000">
-                    <span class="unit">km</span>
-                  </div>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Motivo de ingreso *</label>
-                  <select id="t-reason">
-                    <option value="">Seleccionar motivo</option>
-                    <option value="Service general">Service general</option>
-                    <option value="Mantenimiento de motor">Mantenimiento de motor</option>
-                    <option value="Cambio de aceite y filtros">Cambio de aceite y filtros</option>
-                    <option value="Reparación de frenos">Reparación de frenos</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Diagnóstico</label>
-                  <textarea id="t-diagnosis" rows="2" placeholder="Describa el diagnóstico del vehículo..."></textarea>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Trabajo realizado *</label>
-                  <textarea id="t-work" rows="2" placeholder="Describa el trabajo realizado..."></textarea>
-                </div>
-
-                <div class="form-group full-width">
-                  <label>Observaciones</label>
-                  <textarea id="t-obs" rows="2" placeholder="Observaciones adicionales..."></textarea>
-                </div>
-
-                <!-- SECCIÓN DE CARGA DE FOTOS -->
-                <div class="form-group full-width">
-                  <label>Fotos del vehículo / trabajo</label>
-                  <div class="photo-upload-container">
-                    
-                    <!-- Botón para seleccionar/subir archivos -->
-                    <label for="t-photos" class="photo-upload-box" style="cursor: pointer;">
-                      <i data-lucide="camera"></i>
-                      <span>Subir fotos<br><small>Hacé clic para seleccionar</small></span>
-                      <input type="file" id="t-photos" accept="image/*" multiple style="display: none;" onchange="previewPhotos(event)">
-                    </label>
-
-                    <!-- Contenedor donde se mostrarán las vistas previas de las fotos elegidas -->
-                    <div id="photo-preview-container" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
-                  </div>
-                </div>
-
-              </div>
-
-              <div class="form-actions">
-                <p id="status-msg" class="status-msg"></p>
-                <button type="button" class="btn-secondary" onclick="limpiarFormulario()">Limpiar</button>
-                <button type="button" class="btn-primary" onclick="guardarTodo()">
-                  <i data-lucide="save"></i> Guardar
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <script src="app.js"></script>
-  <script>
-    lucide.createIcons();
-
-    // Función JS para mostrar la vista previa de las imágenes seleccionadas
-    function previewPhotos(event) {
-      const container = document.getElementById('photo-preview-container');
-      container.innerHTML = ''; // Limpiar previas anteriores
-
-      const files = event.target.files;
-      if (files) {
-        Array.from(files).forEach(file => {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '70px';
-            img.style.height = '70px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '8px';
-            img.style.border = '1px solid #ccc';
-            container.appendChild(img);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-    }
-  </script>
+    <script src="admin.js"></script>
+    <script>
+        // Funciones auxiliares para abrir/cerrar la ventanita de admin
+        function abrirModalAdmin() {
+            document.getElementById('modal-admin-login').style.display = 'flex';
+        }
+        function cerrarModalAdmin() {
+            document.getElementById('modal-admin-login').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
