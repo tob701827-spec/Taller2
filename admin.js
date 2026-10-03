@@ -1,6 +1,5 @@
 const SUPABASE_URL = 'https://qhzvdndnzjlqoibsmfnj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoenZkbmRuempscW9pYnNtZm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTIzNzQsImV4cCI6MjEwNjEyODM3NH0.nGoonZHquvpmMuRuvqX16PS47kjaUWb36IiXlrDPrU0'; // Pon tu Anon Key real aquí
-
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFoenZkbmRuempscW9pYnNtZm5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1NTIzNzQsImV4cCI6MjEwNjEyODM3NH0.nGoonZHquvpmMuRuvqX16PS47kjaUWb36IiXlrDPrU0';
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -63,7 +62,7 @@ async function cerrarSesion() {
 
 async function consultarVehiculoCliente(event) {
     if (event) event.preventDefault();
-   const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
+    const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
     if (!matricula) return;
 
     const { data: vehiculo } = await dbClient
@@ -76,10 +75,13 @@ async function consultarVehiculoCliente(event) {
         alert('No se encontró ningún vehículo registrado con esa matrícula.');
         return;
     }
-document.getElementById('cliente-info-vehiculo').innerHTML = `
-    <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
-    <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
-`;
+
+    document.getElementById('cliente-info-vehiculo').innerHTML = `
+        <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
+        <p><strong>Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</p>
+        <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
+        <p><strong>Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</p>
+    `;
 
     const { data: ordenes } = await dbClient
         .from('ordenes_trabajo')
@@ -88,13 +90,21 @@ document.getElementById('cliente-info-vehiculo').innerHTML = `
 
     const tbody = document.getElementById('tabla-cliente-historial');
     tbody.innerHTML = '';
+    
     (ordenes || []).forEach(o => {
+        let fotosHtml = '-';
+        if (o.fotos && o.fotos.length > 0) {
+            fotosHtml = o.fotos.map(url => `<a href="${url}" target="_blank" style="margin-right: 5px;">🖼️ Ver</a>`).join('');
+        }
+
         tbody.innerHTML += `
             <tr style="border-bottom: 1px solid #e2e8f0;">
                 <td style="padding: 8px;">${o.fecha_ingreso || '-'}</td>
+                <td style="padding: 8px;">${o.kilometraje || '-'}</td>
                 <td style="padding: 8px;">${o.motivo || '-'}</td>
+                <td style="padding: 8px;">${o.dtc || '-'}</td>
                 <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
-                <td style="padding: 8px;">${o.diagnostico || '-'}</td>
+                <td style="padding: 8px;">${fotosHtml}</td>
             </tr>
         `;
     });
@@ -109,10 +119,35 @@ async function guardarOrdenAdmin(event) {
     const telefono = document.getElementById('admin-telefono').value.trim();
     const matricula = document.getElementById('admin-matricula').value.trim().toUpperCase();
     const vehiculoDetalle = document.getElementById('admin-vehiculo').value.trim();
+    const chasis = document.getElementById('admin-chasis').value.trim();
+    const kilometraje = document.getElementById('admin-kilometraje').value.trim();
     const motivo = document.getElementById('admin-motivo').value.trim();
+    const dtc = document.getElementById('admin-dtc').value.trim();
+    const observaciones = document.getElementById('admin-observaciones').value.trim();
+    const inputFotos = document.getElementById('admin-fotos');
 
     try {
-        // 1. Insertar el cliente en la tabla 'clientes'
+        // Subir imágenes si se seleccionaron
+        let fotosUrls = [];
+        if (inputFotos && inputFotos.files.length > 0) {
+            for (let i = 0; i < inputFotos.files.length; i++) {
+                const file = inputFotos.files[i];
+                const fileName = `${Date.now()}_${file.name}`;
+                
+                const { data: fileData, error: fileError } = await dbClient.storage
+                    .from('fotos_vehiculos')
+                    .upload(fileName, file);
+
+                if (!fileError && fileData) {
+                    const { data: publicUrlData } = dbClient.storage
+                        .from('fotos_vehiculos')
+                        .getPublicUrl(fileName);
+                    if (publicUrlData) fotosUrls.push(publicUrlData.publicUrl);
+                }
+            }
+        }
+
+        // 1. Insertar cliente
         const { data: cliente, error: errCliente } = await dbClient
             .from('clientes')
             .insert([{ nombre: nombre, telefono: telefono }])
@@ -121,32 +156,38 @@ async function guardarOrdenAdmin(event) {
 
         if (errCliente) throw errCliente;
 
-        // 2. Insertar el vehículo vinculado al cliente
+        // 2. Insertar vehículo
         const { data: vehiculo, error: errVehiculo } = await dbClient
             .from('vehiculos')
             .insert([{ 
                 cliente_id: cliente.id, 
                 matricula: matricula, 
                 marca: vehiculoDetalle,
-                modelo: vehiculoDetalle 
+                modelo: vehiculoDetalle,
+                chasis: chasis
             }])
             .select()
             .single();
 
         if (errVehiculo) throw errVehiculo;
 
-        // 3. Crear la orden de trabajo para ese vehículo
+        // 3. Crear orden de trabajo
         const { error: errOrden } = await dbClient
             .from('ordenes_trabajo')
             .insert([{ 
                 vehiculo_id: vehiculo.id, 
                 motivo: motivo, 
                 trabajo_realizado: 'Pendiente de revisión',
-                fecha_ingreso: new Date().toISOString().split('T')[0] 
+                fecha_ingreso: new Date().toISOString().split('T')[0],
+                kilometraje: kilometraje,
+                dtc: dtc,
+                observaciones: observaciones,
+                fotos: fotosUrls
             }]);
-            if (errOrden) throw errOrden;
 
-        alert('¡Vehículo y orden registrados exitosamente en la base de datos!');
+        if (errOrden) throw errOrden;
+
+        alert('¡Vehículo, orden y fotografías guardados exitosamente!');
         document.getElementById('form-nueva-orden').reset();
 
     } catch (error) {

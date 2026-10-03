@@ -22,7 +22,7 @@
             <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
         </header>
 
-        <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card" style="max-width: 750px; margin: 0 auto;">
             <h3>🚗 Consulta de Cliente</h3>
             <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
             <form id="form-consulta" onsubmit="consultarVehiculoCliente(event)">
@@ -36,17 +36,21 @@
             <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
                 <div id="cliente-info-vehiculo"></div>
                 <h4 style="margin-top: 15px; color: #0d47a1;">Historial de Trabajos:</h4>
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
-                    <thead>
-                        <tr style="background: #f1f5f9; text-align: left;">
-                            <th style="padding: 8px;">Fecha</th>
-                            <th style="padding: 8px;">Motivo</th>
-                            <th style="padding: 8px;">Trabajo Realizado</th>
-                            <th style="padding: 8px;">Diagnóstico</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-cliente-historial"></tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="background: #f1f5f9; text-align: left;">
+                                <th style="padding: 8px;">Fecha</th>
+                                <th style="padding: 8px;">Km</th>
+                                <th style="padding: 8px;">Motivo / Falla</th>
+                                <th style="padding: 8px;">DTC</th>
+                                <th style="padding: 8px;">Trabajo Realizado</th>
+                                <th style="padding: 8px;">Fotos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-cliente-historial"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -70,7 +74,7 @@
             <h3>📝 Registrar Nuevo Vehículo / Orden</h3>
             <form id="form-nueva-orden" onsubmit="guardarOrdenAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
                 <div class="input-group">
-                    <label>Cliente / Nombre</label>
+                    <label>Cliente / Nombre *</label>
                     <input type="text" id="admin-nombre-cliente" placeholder="Nombre completo" required>
                 </div>
                 <div class="input-group">
@@ -78,18 +82,38 @@
                     <input type="text" id="admin-telefono" placeholder="Ej: 0981123456">
                 </div>
                 <div class="input-group">
-                    <label>Matrícula / Patente</label>
+                    <label>Matrícula / Patente *</label>
                     <input type="text" id="admin-matricula" placeholder="Ej: ABC123" required>
                 </div>
                 <div class="input-group">
                     <label>Marca y Modelo</label>
                     <input type="text" id="admin-vehiculo" placeholder="Ej: Toyota Corolla 2018">
                 </div>
+                <div class="input-group">
+                    <label>Nº de Chasis / VIN</label>
+                    <input type="text" id="admin-chasis" placeholder="Ej: ZNE10-0123456">
+                </div>
+                <div class="input-group">
+                    <label>Kilometraje (km)</label>
+                    <input type="text" id="admin-kilometraje" placeholder="Ej: 185.000">
+                </div>
                 <div class="input-group" style="grid-column: span 2;">
-                    <label>Motivo de Ingreso / Falla</label>
+                    <label>Motivo de Ingreso / Falla *</label>
                     <input type="text" id="admin-motivo" placeholder="Ej: Golpeteo en cambio de marcha" required>
                 </div>
-                <div style="grid-column: span 2; text-align: right;">
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Códigos DTC (Escáner)</label>
+                    <input type="text" id="admin-dtc" placeholder="Ej: P1122, P0300">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Observaciones / Diagnóstico</label>
+                    <textarea id="admin-observaciones" placeholder="Detalles o estado del vehículo..." rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Adjuntar Fotos (Vehículo / Repuestos / Ficha)</label>
+                    <input type="file" id="admin-fotos" multiple accept="image/*" style="margin-top: 5px;">
+                </div>
+                <div style="grid-column: span 2; text-align: right; margin-top: 10px;">
                     <button type="submit" class="btn-primary">Guardar Registro</button>
                 </div>
             </form>
