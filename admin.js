@@ -65,53 +65,73 @@ async function consultarVehiculoCliente(event) {
     const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
     if (!matricula) return;
 
-    const { data: vehiculo } = await dbClient
-        .from('vehiculos')
-        .select('*, clientes(nombre, telefono)')
-        .eq('matricula', matricula)
-        .maybeSingle();
+    try {
+        const { data: vehiculo, error: errVehiculo } = await dbClient
+            .from('vehiculos')
+            .select('*, clientes(nombre, telefono)')
+            .eq('matricula', matricula)
+            .maybeSingle();
 
-    if (!vehiculo) {
-        alert('No se encontró ningún vehículo registrado con esa matrícula.');
-        return;
-    }
-
-    document.getElementById('cliente-info-vehiculo').innerHTML = `
-        <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
-        <p><strong>Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</p>
-        <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
-        <p><strong>Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</p>
-    `;
-
-    const { data: ordenes } = await dbClient
-        .from('ordenes_trabajo')
-        .select('*')
-        .eq('vehiculo_id', vehiculo.id);
-
-    const tbody = document.getElementById('tabla-cliente-historial');
-    tbody.innerHTML = '';
-    
-    (ordenes || []).forEach(o => {
-        let fotosHtml = '-';
-        if (o.fotos && o.fotos.length > 0) {
-            fotosHtml = o.fotos.map(url => `<a href="${url}" target="_blank" style="margin-right: 5px;">🖼️ Ver</a>`).join('');
+        if (errVehiculo) {
+            console.error("Error al buscar vehículo:", errVehiculo);
+            alert('Ocurrió un error al consultar la base de datos.');
+            return;
         }
 
-        tbody.innerHTML += `
-            <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 8px;">${o.fecha_ingreso || '-'}</td>
-                <td style="padding: 8px;">${o.kilometraje || '-'}</td>
-                <td style="padding: 8px;">${o.motivo || '-'}</td>
-                <td style="padding: 8px;">${o.dtc || '-'}</td>
-                <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
-                <td style="padding: 8px;">${fotosHtml}</td>
-            </tr>
+        if (!vehiculo) {
+            alert('No se encontró ningún vehículo registrado con esa matrícula.');
+            document.getElementById('resultado-cliente').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('cliente-info-vehiculo').innerHTML = `
+            <p><strong>Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</p>
+            <p><strong>Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</p>
+            <p><strong>Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</p>
+            <p><strong>Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</p>
         `;
-    });
 
-    document.getElementById('resultado-cliente').style.display = 'block';
+        const { data: ordenes, error: errOrdenes } = await dbClient
+            .from('ordenes_trabajo')
+            .select('*')
+            .eq('vehiculo_id', vehiculo.id);
+
+        if (errOrdenes) {
+            console.error("Error al buscar historial:", errOrdenes);
+        }
+
+        const tbody = document.getElementById('tabla-cliente-historial');
+        tbody.innerHTML = '';
+
+        if (!ordenes || ordenes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="padding: 10px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
+        } else {
+            ordenes.forEach(o => {
+                let fotosHtml = '-';
+                if (o.fotos && o.fotos.length > 0) {
+                    fotosHtml = o.fotos.map(url => `<a href="${url}" target="_blank" style="margin-right: 5px;">🖼️ Ver</a>`).join('');
+                }
+
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 8px;">${o.fecha_ingreso || '-'}</td>
+                        <td style="padding: 8px;">${o.kilometraje || '-'}</td>
+                        <td style="padding: 8px;">${o.motivo || '-'}</td>
+                        <td style="padding: 8px;">${o.dtc || '-'}</td>
+                        <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
+                        <td style="padding: 8px;">${fotosHtml}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById('resultado-cliente').style.display = 'block';
+
+    } catch (err) {
+        console.error("Error en la consulta:", err);
+        alert("Ocurrió un error inesperado al realizar la búsqueda.");
+    }
 }
-
 async function guardarOrdenAdmin(event) {
     if (event) event.preventDefault();
 
