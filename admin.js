@@ -374,15 +374,21 @@ function filtrarVehiculosAdmin() {
     if (!input) return;
 
     const texto = input.value.toLowerCase().trim();
+    
+    // Si el buscador está vacío, muestra la lista completa
     if (!texto) {
         renderizarTablaAdmin(agrupadoVehiculosGlobal);
         return;
     }
 
+    // Filtrar los registros por matrícula o por nombre del cliente
     const filtrado = {};
     Object.keys(agrupadoVehiculosGlobal).forEach(mat => {
         const item = agrupadoVehiculosGlobal[mat];
-        if (item.matricula.toLowerCase().includes(texto) || item.cliente.toLowerCase().includes(texto)) {
+        const clienteNombre = (item.cliente || '').toLowerCase();
+        const matricula = (item.matricula || '').toLowerCase();
+
+        if (matricula.includes(texto) || clienteNombre.includes(texto)) {
             filtrado[mat] = item;
         }
     });
