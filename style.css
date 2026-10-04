@@ -7,58 +7,74 @@
 }
 
 body {
-    background-color: #f3f4f6;
+    background-color: #0b0f19;
     color: #1f2937;
     padding: 10px;
     min-height: 100vh;
     position: relative;
-    /* Adorno original rojo/negro ubicado abajo a la derecha */
-    background-image: linear-gradient(135deg, transparent 72%, #111827 72%, #111827 84%, #dc2626 84%);
+    /* Fondo con franja negra arriba/centro y detalle rojo en las esquinas */
+    background-image: linear-gradient(135deg, #0b0f19 75%, #dc2626 75%);
     background-repeat: no-repeat;
-    background-position: bottom right;
     background-attachment: fixed;
-    background-size: 100% 100%;
+    background-size: cover;
 }
 
-/* CABECERA CON TEXTO AZUL OSCURO Y ROJO */
+/* HEADER CON TEXTO GRANDE AZUL Y RED */
 .portal-header {
     text-align: center;
-    margin-bottom: 20px;
-    padding-top: 25px;
+    margin-bottom: 25px;
+    padding-top: 20px;
 }
 
 .portal-header h1 {
-    font-size: 1.6rem;
-    color: #1e3a8a; /* Azul institucional */
-    font-weight: 800;
+    font-size: 1.8rem;
+    color: #1e3a8a; /* Azul corporativo */
+    font-weight: 900;
+    font-style: italic;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.portal-header h1 span {
-    color: #1e3a8a;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
 }
 
 .portal-header p {
-    color: #dc2626; /* Rojo secundario */
+    color: #dc2626; /* Rojo de subtítulo */
     font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    margin-top: 4px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-top: 6px;
+    text-transform: uppercase;
 }
 
-/* TARJETA BLANCA PRINCIPAL */
+/* TARJETA BLANCA FLOTANTE CON BORDE ROJO */
 .card {
     background: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     margin: 0 auto 20px auto;
     width: 100%;
     max-width: 850px;
+    border-top: 4px solid #dc2626;
 }
 
-/* FORMULARIO E INPUTS */
+/* TITULOS DE TARJETAS (Consulta de Cliente, etc.) */
+.card h2, .card h3 {
+    color: #111827;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card p.subtext {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 18px;
+}
+
+/* INPUTS Y CAMPOS */
 .input-group {
     display: flex;
     flex-direction: column;
@@ -66,9 +82,9 @@ body {
 }
 
 .input-group label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 800;
-    color: #111827;
+    color: #374151;
     margin-bottom: 6px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
@@ -77,9 +93,9 @@ body {
 .input-group input,
 .input-group textarea,
 .input-group select {
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 12px 15px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
     font-size: 0.95rem;
     background-color: #f9fafb;
     color: #111827;
@@ -94,71 +110,87 @@ body {
     background-color: #ffffff;
 }
 
-/* BOTÓN DE BÚSQUEDA ROJO DE TU SITIO ORIGINAL */
+/* BOTÓN PRINCIPAL ROJO Y RESPLANDOR */
 .btn-primary {
-    background-color: #dc2626;
+    background-color: #b91c1c;
     color: #ffffff;
     border: none;
-    padding: 14px;
-    border-radius: 10px;
-    font-weight: 800;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 900;
     font-size: 1rem;
     cursor: pointer;
     width: 100%;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    box-shadow: 0 6px 18px rgba(185, 28, 28, 0.4);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
 }
 
 .btn-primary:hover {
-    background-color: #b91c1c;
+    background-color: #991b1b;
 }
 
 .btn-secondary {
-    background-color: #e5e7eb;
-    color: #374151;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-weight: 600;
+    background-color: #ffffff;
+    color: #1f2937;
+    border: 1.5px solid #d1d5db;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 700;
     cursor: pointer;
+}
+
+/* TABLAS E HISTORIAL */
+#resultado-cliente table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#resultado-cliente table th {
+    background-color: #1e3a8a;
+    color: #ffffff;
+    padding: 10px;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+#resultado-cliente table td {
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+}
+
+/* BOTÓN FLOTANTE CERRAR SESIÓN / ACCESO */
+.top-bar-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
 }
 
 /* MODALES */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    padding: 15px;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000; padding: 15px;
 }
 
 .modal-content {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 22px;
+    border-radius: 14px;
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
+    border-top: 5px solid #dc2626;
 }
 
-/* TABLA DE CLIENTE */
-#resultado-cliente table th {
-    background-color: #1e3a8a;
-    color: #ffffff;
-}
-
-/* AJUSTES RESPONSIVE PARA MÓVIL (SIN CAMBIAR TUS ESTILOS BASE) */
+/* ADAPTACIÓN MÓVIL */
 @media (max-width: 768px) {
-    body {
-        background-size: 100% 35vh; /* Mantiene la franja decorativa abajo en el cel */
-    }
-
-    /* Pasa las grillas de 2 columnas a 1 columna en pantallas chicas */
     #cliente-info-vehiculo div,
     #form-nueva-orden,
     #form-editar-orden {
