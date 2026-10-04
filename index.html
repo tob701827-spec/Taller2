@@ -131,22 +131,20 @@
 
         <!-- PESTAÑA HISTORIAL Y BASE DE DATOS -->
         <div id="pestana-historial" class="card" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3>🗂️ Registro General del Taller</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0;">🗂️ Registro General del Taller</h3>
+                <input type="text" id="admin-buscador" placeholder="🔍 Buscar matrícula o cliente..." onkeyup="filtrarVehiculosAdmin()" style="padding: 8px 12px; width: 260px; border: 1px solid #cbd5e1; border-radius: 6px;">
                 <button type="button" class="btn-secondary" onclick="cargarOrdenesAdmin()">🔄 Actualizar Listado</button>
             </div>
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
                     <thead>
                         <tr style="background: #1e293b; color: white; text-align: left;">
                             <th style="padding: 10px;">Cliente</th>
                             <th style="padding: 10px;">Matrícula</th>
                             <th style="padding: 10px;">Vehículo</th>
-                            <th style="padding: 10px;">Km</th>
-                            <th style="padding: 10px;">Falla</th>
-                            <th style="padding: 10px;">Trabajo Realizado</th>
-                            <th style="padding: 10px;">Observaciones</th>
-                            <th style="padding: 10px;">Fotografía</th>
+                            <th style="padding: 10px;">Última Visita</th>
+                            <th style="padding: 10px;">Historial</th>
                             <th style="padding: 10px; text-align: center;">Acciones</th>
                         </tr>
                     </thead>
@@ -156,10 +154,21 @@
         </div>
     </div>
 
+    <!-- MODAL HISTORIAL COMPLETO POR MATRÍCULA -->
+    <div id="modal-historial-vehiculo" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 850px; max-height: 85vh; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin:0; color: #0d47a1;" id="historial-modal-titulo">🚗 Historial de Vehículo</h3>
+                <button type="button" class="btn-secondary" onclick="cerrarModalHistorial()">✖ Cerrar</button>
+            </div>
+            <div id="historial-modal-contenido"></div>
+        </div>
+    </div>
+
     <!-- MODAL EDITAR REGISTRO COMPLETO -->
-    <div id="modal-editar-orden" class="modal" style="display: none;">
+    <div id="modal-editar-orden" class="modal" style="display: none; z-index: 10001;">
         <div class="modal-content" style="max-width: 650px;">
-            <h3 style="margin-bottom: 15px; color: #0d47a1;">✏️️ Editar Registro de Orden</h3>
+            <h3 style="margin-bottom: 15px; color: #0d47a1;">✏ Editar Registro de Orden</h3>
             <form id="form-editar-orden" onsubmit="actualizarOrdenCompleta(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <input type="hidden" id="edit-orden-id">
                 <div class="input-group">

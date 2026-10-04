@@ -3,7 +3,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let listaOrdenesGlobal = [];
+let agrupadoVehiculosGlobal = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     verificarSesion();
@@ -69,6 +69,11 @@ function cerrarModalEditar() {
     if (modal) modal.style.display = 'none';
 }
 
+function cerrarModalHistorial() {
+    const modal = document.getElementById('modal-historial-vehiculo');
+    if (modal) modal.style.display = 'none';
+}
+
 async function iniciarSesion(event) {
     if (event) event.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -89,7 +94,7 @@ async function cerrarSesion() {
     verificarSesion();
 }
 
-// BÚSQUEDA CORREGIDA PASO A PASO PARA EVITAR ERRORES DE CONSULTA
+// BÚSQUEDA DEL CLIENTE EN EL PORTAL PÚBLICO
 async function consultarVehiculoCliente(event) {
     if (event) event.preventDefault();
     const matriculaInput = document.getElementById('input-matricula');
@@ -99,15 +104,13 @@ async function consultarVehiculoCliente(event) {
     if (!matricula) return;
 
     try {
-        // 1. Buscar el vehículo por matrícula de forma directa
         const { data: vehiculos, error: errVehiculo } = await dbClient
             .from('vehiculos')
             .select('*')
             .eq('matricula', matricula);
 
         if (errVehiculo) {
-            console.error("Error al buscar vehículo:", errVehiculo);
-            alert('Error en Supabase: ' + errVehiculo.message);
+            alert('Error al buscar vehículo: ' + errVehiculo.message);
             return;
         }
 
@@ -121,7 +124,6 @@ async function consultarVehiculoCliente(event) {
         const primerVehiculo = vehiculos[0];
         const idsVehiculos = vehiculos.map(v => v.id);
 
-        // 2. Obtener datos del cliente si existe cliente_id
         let clienteNombre = 'N/A';
         let clienteTelefono = 'N/A';
 
@@ -151,14 +153,11 @@ async function consultarVehiculoCliente(event) {
             `;
         }
 
-        // 3. Traer el historial de órdenes de trabajo asociadas
-        const { data: ordenes, error: errOrdenes } = await dbClient
+        const { data: ordenes } = await dbClient
             .from('ordenes_trabajo')
             .select('*')
             .in('vehiculo_id', idsVehiculos)
             .order('fecha_ingreso', { ascending: false });
-
-        if (errOrdenes) console.error("Error al buscar órdenes:", errOrdenes);
 
         const tbody = document.getElementById('tabla-cliente-historial');
         if (tbody) {
@@ -171,17 +170,15 @@ async function consultarVehiculoCliente(event) {
                     let fotosHtml = 'Sin foto';
                     if (o.fotos && o.fotos.length > 0) {
                         fotosHtml = o.fotos.map(url => `
-                            <div style="margin: 5px 0;">
-                                <a href="${url}" target="_blank">
-                                    <img src="${url}" style="max-width: 140px; max-height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Ver imagen completa" />
-                                </a>
-                            </div>
+                            <a href="${url}" target="_blank">
+                                <img src="${url}" style="max-width: 120px; max-height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #0d47a1;" />
+                            </a>
                         `).join('');
                     }
 
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 10px;">${o.fecha_ingreso || '-'}</td>
+                            <td style="padding: 10px;"><strong>📅 ${o.fecha_ingreso || '-'}</strong></td>
                             <td style="padding: 10px;">${o.kilometraje || '-'} km</td>
                             <td style="padding: 10px;">${o.motivo || '-'}</td>
                             <td style="padding: 10px;">${o.dtc || '-'}</td>
@@ -198,8 +195,7 @@ async function consultarVehiculoCliente(event) {
         if (resDiv) resDiv.style.display = 'block';
 
     } catch (err) {
-        console.error("Error imprevisto en la búsqueda:", err);
-        alert("Ocurrió un problema inesperado durante la consulta.");
+        console.error("Error imprevisto:", err);
     }
 }
 
@@ -238,7 +234,6 @@ async function guardarOrdenAdmin(event) {
             }
         }
 
-        // Buscar si ya existe el vehículo
         let { data: vehiculosExistentes } = await dbClient
             .from('vehiculos')
             .select('id')
@@ -298,76 +293,168 @@ async function guardarOrdenAdmin(event) {
     }
 }
 
+// CARGAR Y AGRUPAR ORDENES POR MATRÍCULA
 async function cargarOrdenesAdmin() {
     const tbody = document.getElementById('tabla-admin-ordenes');
     if (!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center;">Cargando lista de vehículos...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center;">Cargando lista de vehículos...</td></tr>';
 
     try {
         const { data: ordenes, error } = await dbClient
             .from('ordenes_trabajo')
             .select('*, vehiculos(*, clientes(*))')
-            .order('id', { ascending: false });
+            .order('fecha_ingreso', { ascending: false });
 
         if (error) throw error;
 
-        listaOrdenesGlobal = ordenes || [];
-        tbody.innerHTML = '';
+        agrupadoVehiculosGlobal = {};
 
-        if (!ordenes || ordenes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center;">No hay vehículos registrados en la base de datos.</td></tr>';
-            return;
-        }
-
-        ordenes.forEach(o => {
+        (ordenes || []).forEach(o => {
             const v = o.vehiculos || {};
             const c = v.clientes || {};
+            const mat = v.matricula || 'SIN_MATRICULA';
 
-            let fotosHtml = 'Sin foto';
-            if (o.fotos && o.fotos.length > 0) {
-                fotosHtml = o.fotos.map(url => `
-                    <a href="${url}" target="_blank">
-                        <img src="${url}" style="width: 70px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" title="Ampliar" />
-                    </a>
-                `).join('');
+            if (!agrupadoVehiculosGlobal[mat]) {
+                agrupadoVehiculosGlobal[mat] = {
+                    matricula: mat,
+                    cliente: c.nombre || 'N/A',
+                    telefono: c.telefono || '',
+                    vehiculo: v.marca || v.modelo || 'N/A',
+                    ordenes: []
+                };
             }
-
-            tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 8px;"><strong>${c.nombre || 'N/A'}</strong><br><small>${c.telefono || ''}</small></td>
-                    <td style="padding: 8px;"><span style="background: #e2e8f0; padding: 2px 5px; border-radius: 4px; font-weight: bold;">${v.matricula || '-'}</span></td>
-                    <td style="padding: 8px;">${v.marca || '-'}</td>
-                    <td style="padding: 8px;">${o.kilometraje || '-'}</td>
-                    <td style="padding: 8px;">${o.motivo || '-'}</td>
-                    <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
-                    <td style="padding: 8px;">${o.observaciones || '-'}</td>
-                    <td style="padding: 8px;">${fotosHtml}</td>
-                    <td style="padding: 8px; text-align: center;">
-                        <button style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 3px;" onclick="abrirModalEditar('${o.id}')">✏️ Editar</button>
-                        <button style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar</button>
-                    </td>
-                </tr>
-            `;
+            agrupadoVehiculosGlobal[mat].ordenes.push(o);
         });
+
+        renderizarTablaAdmin(agrupadoVehiculosGlobal);
 
     } catch (err) {
         console.error("Error al cargar lista:", err);
-        tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
     }
 }
 
-function abrirModalEditar(ordenId) {
-    const orden = listaOrdenesGlobal.find(o => String(o.id) === String(ordenId));
-    if (!orden) return;
+// DIBUJAR TABLA PRINCIPAL CON FILAS ÚNICAS
+function renderizarTablaAdmin(agrupado) {
+    const tbody = document.getElementById('tabla-admin-ordenes');
+    if (!tbody) return;
 
-    document.getElementById('edit-orden-id').value = orden.id;
-    document.getElementById('edit-fecha').value = orden.fecha_ingreso || '';
-    document.getElementById('edit-kilometraje').value = orden.kilometraje || '';
-    document.getElementById('edit-motivo').value = orden.motivo || '';
-    document.getElementById('edit-dtc').value = orden.dtc || '';
-    document.getElementById('edit-trabajo').value = orden.trabajo_realizado || '';
-    document.getElementById('edit-observaciones').value = orden.observaciones || '';
+    tbody.innerHTML = '';
+    const llaves = Object.keys(agrupado);
+
+    if (llaves.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="padding: 15px; text-align: center;">No hay vehículos registrados.</td></tr>';
+        return;
+    }
+
+    llaves.forEach(mat => {
+        const item = agrupado[mat];
+        const ultimaOrden = item.ordenes[0] || {};
+        const totalVisitas = item.ordenes.length;
+
+        tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px;"><strong>${item.cliente}</strong><br><small>${item.telefono}</small></td>
+                <td style="padding: 10px;"><span style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-weight: bold;">${item.matricula}</span></td>
+                <td style="padding: 10px;">${item.vehiculo}</td>
+                <td style="padding: 10px;">📅 ${ultimaOrden.fecha_ingreso || 'N/A'}</td>
+                <td style="padding: 10px;"><span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-weight: bold;">${totalVisitas} registro(s)</span></td>
+                <td style="padding: 10px; text-align: center;">
+                    <button style="background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="verHistorialModal('${item.matricula}')">👁️ Ver Historial</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// FILTRAR VEHÍCULOS EN TIEMPO REAL
+function filtrarVehiculosAdmin() {
+    const input = document.getElementById('admin-buscador');
+    if (!input) return;
+
+    const texto = input.value.toLowerCase().trim();
+    if (!texto) {
+        renderizarTablaAdmin(agrupadoVehiculosGlobal);
+        return;
+    }
+
+    const filtrado = {};
+    Object.keys(agrupadoVehiculosGlobal).forEach(mat => {
+        const item = agrupadoVehiculosGlobal[mat];
+        if (item.matricula.toLowerCase().includes(texto) || item.cliente.toLowerCase().includes(texto)) {
+            filtrado[mat] = item;
+        }
+    });
+
+    renderizarTablaAdmin(filtrado);
+}
+
+// ABRIR VENTANA CON EL HISTORIAL ORDENADO POR FECHAS
+function verHistorialModal(matricula) {
+    const item = agrupadoVehiculosGlobal[matricula];
+    if (!item) return;
+
+    document.getElementById('historial-modal-titulo').innerHTML = `🚗 Historial: <strong>${item.matricula}</strong> - ${item.cliente}`;
+
+    let html = `
+        <div style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem;">
+            <strong>👤 Cliente:</strong> ${item.cliente} | <strong>📞 Teléfono:</strong> ${item.telefono} | <strong>🚘 Vehículo:</strong> ${item.vehiculo}
+        </div>
+    `;
+
+    item.ordenes.forEach((o) => {
+        let fotosHtml = 'Sin fotografías';
+        if (o.fotos && o.fotos.length > 0) {
+            fotosHtml = o.fotos.map(url => `
+                <a href="${url}" target="_blank">
+                    <img src="${url}" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1; margin-right: 5px;" />
+                </a>
+            `).join('');
+        }
+
+        html += `
+            <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px;">
+                    <span style="font-weight: bold; color: #0d47a1;">📅 Fecha: ${o.fecha_ingreso || 'N/A'}</span>
+                    <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;"><strong>Km:</strong> ${o.kilometraje || '-'}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                    <div><strong>Motivo / Falla:</strong> ${o.motivo || '-'}</div>
+                    <div><strong>Códigos DTC:</strong> ${o.dtc || '-'}</div>
+                    <div style="grid-column: span 2;"><strong>Trabajo Realizado:</strong> <span style="color: #2563eb; font-weight: bold;">${o.trabajo_realizado || '-'}</span></div>
+                    <div style="grid-column: span 2;"><strong>Observaciones:</strong> ${o.observaciones || '-'}</div>
+                    <div style="grid-column: span 2; margin-top: 5px;"><strong>Fotos:</strong><br>${fotosHtml}</div>
+                </div>
+                <div style="text-align: right; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                    <button style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" onclick="abrirModalEditar('${o.id}')">✏️ Editar Registro</button>
+                    <button style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar Registro</button>
+                </div>
+            </div>
+        `;
+    });
+
+    document.getElementById('historial-modal-contenido').innerHTML = html;
+    document.getElementById('modal-historial-vehiculo').style.display = 'flex';
+}
+
+function abrirModalEditar(ordenId) {
+    let ordenEncontrada = null;
+
+    Object.keys(agrupadoVehiculosGlobal).forEach(mat => {
+        const o = agrupadoVehiculosGlobal[mat].ordenes.find(x => String(x.id) === String(ordenId));
+        if (o) ordenEncontrada = o;
+    });
+
+    if (!ordenEncontrada) return;
+
+    document.getElementById('edit-orden-id').value = ordenEncontrada.id;
+    document.getElementById('edit-fecha').value = ordenEncontrada.fecha_ingreso || '';
+    document.getElementById('edit-kilometraje').value = ordenEncontrada.kilometraje || '';
+    document.getElementById('edit-motivo').value = ordenEncontrada.motivo || '';
+    document.getElementById('edit-dtc').value = ordenEncontrada.dtc || '';
+    document.getElementById('edit-trabajo').value = ordenEncontrada.trabajo_realizado || '';
+    document.getElementById('edit-observaciones').value = ordenEncontrada.observaciones || '';
 
     document.getElementById('modal-editar-orden').style.display = 'flex';
 }
@@ -400,6 +487,7 @@ async function actualizarOrdenCompleta(event) {
 
         alert('¡Registro actualizado con éxito!');
         cerrarModalEditar();
+        cerrarModalHistorial();
         cargarOrdenesAdmin();
 
     } catch (err) {
@@ -419,6 +507,7 @@ async function eliminarOrdenAdmin(ordenId) {
         if (error) throw error;
 
         alert('¡Registro eliminado!');
+        cerrarModalHistorial();
         cargarOrdenesAdmin();
     } catch (err) {
         alert('Error al eliminar: ' + err.message);
