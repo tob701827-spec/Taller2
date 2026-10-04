@@ -10,28 +10,36 @@ body {
     background-color: #f1f5f9;
     color: #1e293b;
     padding: 15px;
+    min-height: 100vh;
+    position: relative;
+    /* Fondo decorativo rojo/negro de la esquina */
+    background-image: linear-gradient(135deg, transparent 75%, #000000 75%, #000000 85%, #dc2626 85%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
 }
 
 /* CABECERA */
 .portal-header {
     text-align: center;
     margin-bottom: 25px;
-    padding-top: 40px;
+    padding-top: 30px;
 }
 
 .portal-header h1 {
     font-size: 1.8rem;
-    color: #0f172a;
+    color: #0b2545;
+    font-weight: 800;
 }
 
 .portal-header h1 span {
-    color: #0d47a1;
+    color: #dc2626; /* Rojo destacado */
 }
 
 .portal-header p {
-    color: #64748b;
+    color: #dc2626;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 1px;
 }
 
@@ -40,9 +48,10 @@ body {
     background: #ffffff;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     margin-bottom: 20px;
     width: 100%;
+    border-top: 4px solid #dc2626; /* Detalle superior rojo */
 }
 
 /* FORMULARIOS E INPUTS */
@@ -54,9 +63,10 @@ body {
 
 .input-group label {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: #334155;
+    font-weight: 700;
+    color: #1e293b;
     margin-bottom: 4px;
+    text-transform: uppercase;
 }
 
 .input-group input, 
@@ -67,43 +77,48 @@ body {
     border-radius: 6px;
     font-size: 0.95rem;
     outline: none;
-    transition: border-color 0.2s;
+    background-color: #f8fafc;
+    transition: all 0.2s;
     width: 100%;
 }
 
 .input-group input:focus, 
 .input-group textarea:focus {
     border-color: #0d47a1;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
 }
 
 /* BOTONES */
 .btn-primary {
-    background-color: #0d47a1;
+    background-color: #dc2626; /* Rojo principal */
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: #b91c1c;
+}
+
+.btn-secondary {
+    background-color: #0d47a1; /* Azul secundario */
     color: white;
     border: none;
     padding: 10px 18px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
     transition: background 0.2s;
 }
 
-.btn-primary:hover {
-    background-color: #1565c0;
-}
-
-.btn-secondary {
-    background-color: #e2e8f0;
-    color: #334155;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
 .btn-secondary:hover {
-    background-color: #cbd5e1;
+    background-color: #1565c0;
 }
 
 /* MODALES */
@@ -113,7 +128,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -123,57 +139,50 @@ body {
 
 .modal-content {
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 25px;
+    border-radius: 12px;
     width: 100%;
     max-width: 500px;
+    border-top: 5px solid #dc2626;
 }
 
 /* ==========================================
-   REGLAS DE ADAPTACIÓN A CELULARES (RESPONSIVE)
+   ADAPTACIÓN A CELULARES (RESPONSIVE)
    ========================================== */
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        background-size: auto 30vh; /* Ajusta la decoración al pie de la pantalla en móvil */
     }
 
     .portal-header {
-        padding-top: 50px;
+        padding-top: 40px;
     }
 
     .portal-header h1 {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
     }
 
     .card {
         padding: 15px;
     }
 
-    /* La tarjeta de información del cliente pasa a 1 sola columna */
+    /* Adaptar tarjeta del cliente a 1 columna en móvil */
     #cliente-info-vehiculo div {
         grid-template-columns: 1fr !important;
         gap: 8px !important;
     }
 
-    /* El formulario de registro de la orden pasa a 1 columna */
-    #form-nueva-orden {
+    /* Adaptar formulario a 1 columna en móvil */
+    #form-nueva-orden, #form-editar-orden {
         grid-template-columns: 1fr !important;
     }
 
-    #form-nueva-orden .input-group {
+    #form-nueva-orden .input-group, #form-editar-orden .input-group {
         grid-column: span 1 !important;
     }
 
-    /* El modal de editar registro pasa a 1 columna */
-    #form-editar-orden {
-        grid-template-columns: 1fr !important;
-    }
-
-    #form-editar-orden .input-group {
-        grid-column: span 1 !important;
-    }
-
-    /* Botón de login/logout arriba a la derecha ajustado */
+    /* Botón superior de acceso */
     div[style*="position: absolute"] {
         top: 10px !important;
         right: 10px !important;
