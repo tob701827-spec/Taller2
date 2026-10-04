@@ -3,7 +3,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let listaOrdenesGlobal = []; // Guardar órdenes en memoria para la edición
+let listaOrdenesGlobal = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     verificarSesion();
@@ -89,17 +89,17 @@ async function cerrarSesion() {
     verificarSesion();
 }
 
+// CONSULTA DE CLIENTE: MUESTRA EL HISTORIAL COMPLETO
 async function consultarVehiculoCliente(event) {
     if (event) event.preventDefault();
     const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
     if (!matricula) return;
 
     try {
-        const { data: vehiculo, error: errVehiculo } = await dbClient
+        const { data: vehiculos, error: errVehiculo } = await dbClient
             .from('vehiculos')
             .select('*, clientes(nombre, telefono)')
-            .eq('matricula', matricula)
-            .maybeSingle();
+            .eq('matricula', matricula);
 
         if (errVehiculo) {
             console.error("Error al buscar vehículo:", errVehiculo);
@@ -107,26 +107,29 @@ async function consultarVehiculoCliente(event) {
             return;
         }
 
-        if (!vehiculo) {
+        if (!vehiculos || vehiculos.length === 0) {
             alert('No se encontró ningún vehículo registrado con esa matrícula.');
             document.getElementById('resultado-cliente').style.display = 'none';
             return;
         }
 
+        const primerVehiculo = vehiculos[0];
+        const vehiculoIds = vehiculos.map(v => v.id);
+
         document.getElementById('cliente-info-vehiculo').innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><strong>👤 Cliente:</strong> ${vehiculo.clientes ? vehiculo.clientes.nombre : 'N/A'}</div>
-                <div><strong>📞 Teléfono:</strong> ${vehiculo.clientes ? vehiculo.clientes.telefono || 'N/A' : 'N/A'}</div>
-                <div><strong>🚘 Vehículo:</strong> ${vehiculo.marca || ''} ${vehiculo.modelo || ''}</div>
-                <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${vehiculo.matricula}</span></div>
-                <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${vehiculo.chasis || 'N/A'}</div>
+                <div><strong>👤 Cliente:</strong> ${primerVehiculo.clientes ? primerVehiculo.clientes.nombre : 'N/A'}</div>
+                <div><strong>📞 Teléfono:</strong> ${primerVehiculo.clientes ? primerVehiculo.clientes.telefono || 'N/A' : 'N/A'}</div>
+                <div><strong>🚘 Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
+                <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
+                <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
             </div>
         `;
 
         const { data: ordenes, error: errOrdenes } = await dbClient
             .from('ordenes_trabajo')
             .select('*')
-            .eq('vehiculo_id', vehiculo.id)
+            .in('vehiculo_id', vehiculoIds)
             .order('fecha_ingreso', { ascending: false });
 
         if (errOrdenes) console.error("Error al buscar historial:", errOrdenes);
@@ -143,7 +146,7 @@ async function consultarVehiculoCliente(event) {
                     fotosHtml = o.fotos.map(url => `
                         <div style="margin: 5px 0;">
                             <a href="${url}" target="_blank">
-                                <img src="${url}" style="max-width: 160px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Haz clic para ver imagen completa" />
+                                <img src="${url}" style="max-width: 140px; max-height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Ver imagen completa" />
                             </a>
                         </div>
                     `).join('');
@@ -171,6 +174,7 @@ async function consultarVehiculoCliente(event) {
     }
 }
 
+// GUARDAR REGISTRO SIN BLOQUEO DE MATRÍCULA
 async function guardarOrdenAdmin(event) {
     if (event) event.preventDefault();
 
@@ -205,19 +209,19 @@ async function guardarOrdenAdmin(event) {
             }
         }
 
-        // 1. Verificamos si el vehículo ya existe por su matrícula
-        let vehiculoId = null;
-        const { data: vehiculoExistente } = await dbClient
+        // Buscar si ya existe un registro de este vehículo
+        let { data: vehiculoExistente } = await dbClient
             .from('vehiculos')
             .select('id')
             .eq('matricula', matricula)
+            .limit(1)
             .maybeSingle();
 
+        let vehiculoId = null;
+
         if (vehiculoExistente) {
-            // Ya está registrado, asociamos la nueva orden a esta ID
             vehiculoId = vehiculoExistente.id;
         } else {
-            // 2. Si es nuevo, creamos cliente y vehículo
             const { data: cliente, error: errCliente } = await dbClient
                 .from('clientes')
                 .insert([{ nombre: nombre, telefono: telefono }])
@@ -242,7 +246,6 @@ async function guardarOrdenAdmin(event) {
             vehiculoId = nuevoVehiculo.id;
         }
 
-        // 3. Insertamos la orden de trabajo asociada
         const { error: errOrden } = await dbClient
             .from('ordenes_trabajo')
             .insert([{ 
@@ -258,7 +261,7 @@ async function guardarOrdenAdmin(event) {
 
         if (errOrden) throw errOrden;
 
-        alert('¡Registro guardado con éxito!');
+        alert('¡Registro guardado exitosamente!');
         document.getElementById('form-nueva-orden').reset();
         cargarOrdenesAdmin();
 
@@ -298,7 +301,7 @@ async function cargarOrdenesAdmin() {
             if (o.fotos && o.fotos.length > 0) {
                 fotosHtml = o.fotos.map(url => `
                     <a href="${url}" target="_blank">
-                        <img src="${url}" style="width: 70px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" title="Haz clic para ampliar" />
+                        <img src="${url}" style="width: 70px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;" title="Ampliar" />
                     </a>
                 `).join('');
             }
@@ -327,7 +330,6 @@ async function cargarOrdenesAdmin() {
     }
 }
 
-// ABRIR Y RELLENAR MODAL PARA EDITAR TODOS LOS DATOS
 function abrirModalEditar(ordenId) {
     const orden = listaOrdenesGlobal.find(o => String(o.id) === String(ordenId));
     if (!orden) return;
@@ -343,7 +345,6 @@ function abrirModalEditar(ordenId) {
     document.getElementById('modal-editar-orden').style.display = 'flex';
 }
 
-// GUARDAR CAMBIOS DE LA EDICIÓN COMPLETA
 async function actualizarOrdenCompleta(event) {
     if (event) event.preventDefault();
 
@@ -370,7 +371,7 @@ async function actualizarOrdenCompleta(event) {
 
         if (error) throw error;
 
-        alert('¡Registro de orden actualizado exitosamente!');
+        alert('¡Registro actualizado exitosamente!');
         cerrarModalEditar();
         cargarOrdenesAdmin();
 
@@ -380,7 +381,7 @@ async function actualizarOrdenCompleta(event) {
 }
 
 async function eliminarOrdenAdmin(ordenId) {
-    if (!confirm("¿Estás seguro de que deseas eliminar este registro del taller?")) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar este registro?")) return;
 
     try {
         const { error } = await dbClient
@@ -390,7 +391,7 @@ async function eliminarOrdenAdmin(ordenId) {
 
         if (error) throw error;
 
-        alert('¡Registro eliminado de la base de datos!');
+        alert('¡Registro eliminado!');
         cargarOrdenesAdmin();
     } catch (err) {
         alert('Error al eliminar: ' + err.message);
