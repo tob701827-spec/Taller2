@@ -74,7 +74,9 @@ body {
     text-transform: uppercase;
 }
 
-.input-group input {
+.input-group input,
+.input-group textarea,
+.input-group select {
     padding: 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
@@ -82,9 +84,12 @@ body {
     background-color: #f9fafb;
     color: #111827;
     outline: none;
+    width: 100%;
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group textarea:focus,
+.input-group select:focus {
     border-color: #dc2626;
     background-color: #ffffff;
 }
@@ -118,19 +123,50 @@ body {
     cursor: pointer;
 }
 
+/* MODALES */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 15px;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+}
+
 /* TABLA DE CLIENTE */
 #resultado-cliente table th {
     background-color: #1e3a8a;
     color: #ffffff;
 }
 
-/* AJUSTE RESPONSIVE PARA QUE NO SE CORTE EN MÓVIL */
+/* AJUSTES RESPONSIVE PARA MÓVIL (SIN CAMBIAR TUS ESTILOS BASE) */
 @media (max-width: 768px) {
     body {
-        background-size: 100% 40vh; /* Controla la altura del adorno en celular */
+        background-size: 100% 35vh; /* Mantiene la franja decorativa abajo en el cel */
     }
 
-    #cliente-info-vehiculo div {
+    /* Pasa las grillas de 2 columnas a 1 columna en pantallas chicas */
+    #cliente-info-vehiculo div,
+    #form-nueva-orden,
+    #form-editar-orden {
         grid-template-columns: 1fr !important;
+    }
+
+    #form-nueva-orden .input-group,
+    #form-editar-orden .input-group {
+        grid-column: span 1 !important;
     }
 }
