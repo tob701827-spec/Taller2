@@ -144,11 +144,11 @@ async function consultarVehiculoCliente(event) {
         if (infoContainer) {
             infoContainer.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><strong>👤 Cliente:</strong> ${clienteNombre}</div>
-                    <div><strong>📞 Teléfono:</strong> ${clienteTelefono}</div>
-                    <div><strong>🚘 Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
-                    <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
-                    <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
+                    <div><strong> Cliente:</strong> ${clienteNombre}</div>
+                    <div><strong> Teléfono:</strong> ${clienteTelefono}</div>
+                    <div><strong> Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
+                    <div><strong> Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
+                    <div style="grid-column: span 2;"><strong> Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
                 </div>
             `;
         }
@@ -178,7 +178,7 @@ async function consultarVehiculoCliente(event) {
 
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 10px;"><strong>📅 ${o.fecha_ingreso || '-'}</strong></td>
+                            <td style="padding: 10px;"><strong> ${o.fecha_ingreso || '-'}</strong></td>
                             <td style="padding: 10px;">${o.kilometraje || '-'} km</td>
                             <td style="padding: 10px;">${o.motivo || '-'}</td>
                             <td style="padding: 10px;">${o.dtc || '-'}</td>
@@ -358,10 +358,10 @@ function renderizarTablaAdmin(agrupado) {
                 <td style="padding: 10px;"><strong>${item.cliente}</strong><br><small>${item.telefono}</small></td>
                 <td style="padding: 10px;"><span style="background: #e2e8f0; padding: 3px 8px; border-radius: 4px; font-weight: bold;">${item.matricula}</span></td>
                 <td style="padding: 10px;">${item.vehiculo}</td>
-                <td style="padding: 10px;">📅 ${ultimaOrden.fecha_ingreso || 'N/A'}</td>
+                <td style="padding: 10px;"> ${ultimaOrden.fecha_ingreso || 'N/A'}</td>
                 <td style="padding: 10px;"><span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-weight: bold;">${totalVisitas} registro(s)</span></td>
                 <td style="padding: 10px; text-align: center;">
-                    <button style="background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="verHistorialModal('${item.matricula}')">👁️ Ver Historial</button>
+                    <button style="background: #0284c7; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;" onclick="verHistorialModal('${item.matricula}')"> Ver Historial</button>
                 </td>
             </tr>
         `;
@@ -401,11 +401,11 @@ function verHistorialModal(matricula) {
     const item = agrupadoVehiculosGlobal[matricula];
     if (!item) return;
 
-    document.getElementById('historial-modal-titulo').innerHTML = `🚗 Historial: <strong>${item.matricula}</strong> - ${item.cliente}`;
+    document.getElementById('historial-modal-titulo').innerHTML = ` Historial: <strong>${item.matricula}</strong> - ${item.cliente}`;
 
     let html = `
         <div style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem;">
-            <strong>👤 Cliente:</strong> ${item.cliente} | <strong>📞 Teléfono:</strong> ${item.telefono} | <strong>🚘 Vehículo:</strong> ${item.vehiculo}
+            <strong> Cliente:</strong> ${item.cliente} | <strong> Teléfono:</strong> ${item.telefono} | <strong> Vehículo:</strong> ${item.vehiculo}
         </div>
     `;
 
@@ -422,7 +422,7 @@ function verHistorialModal(matricula) {
         html += `
             <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <div style="display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; margin-bottom: 10px;">
-                    <span style="font-weight: bold; color: #0d47a1;">📅 Fecha: ${o.fecha_ingreso || 'N/A'}</span>
+                    <span style="font-weight: bold; color: #0d47a1;"> Fecha: ${o.fecha_ingreso || 'N/A'}</span>
                     <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem;"><strong>Km:</strong> ${o.kilometraje || '-'}</span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
@@ -433,8 +433,8 @@ function verHistorialModal(matricula) {
                     <div style="grid-column: span 2; margin-top: 5px;"><strong>Fotos:</strong><br>${fotosHtml}</div>
                 </div>
                 <div style="text-align: right; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                    <button style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" onclick="abrirModalEditar('${o.id}')">✏️ Editar Registro</button>
-                    <button style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar Registro</button>
+                    <button style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;" onclick="abrirModalEditar('${o.id}')"> Editar Registro</button>
+                    <button style="background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;" onclick="eliminarOrdenAdmin('${o.id}')"> Borrar Registro</button>
                 </div>
             </div>
         `;
