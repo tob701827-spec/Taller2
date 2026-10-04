@@ -1,183 +1,186 @@
-/* ==========================================
-   DISEÑO LUMINOSO AUTOMECÁNICA CAÑETE HERMANOS
-   Colores: Blanco Puro, Rojo Vivo, Azul Eléctrico y Negro
-   ========================================== */
-
+/* RESET BÁSICO Y TIPOGRAFÍA */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #f8fafc; /* Fondo claro luminoso */
+    background-color: #f1f5f9;
     color: #1e293b;
-    min-height: 100vh;
-    padding: 20px;
-    /* Marcos / Cortes rojos y negros inspirados en la tarjeta publicitaria */
-    background-image: 
-        linear-gradient(165deg, #111 0%, #111 12%, transparent 12.1%),
-        linear-gradient(-15deg, #d90429 0%, #d90429 18%, #111 18.1%, #111 22%, transparent 22.1%);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
+    padding: 15px;
 }
 
-/* CONTENEDOR PRINCIPAL */
-.portal-container {
-    max-width: 700px;
-    margin: 50px auto;
-    padding: 20px;
-}
-
+/* CABECERA */
 .portal-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
+    padding-top: 40px;
 }
 
 .portal-header h1 {
-    font-size: 2.6rem;
-    font-weight: 900;
-    font-style: italic;
-    color: #0d47a1; /* Azul potente como el folleto */
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 1.8rem;
+    color: #0f172a;
 }
 
 .portal-header h1 span {
-    color: #000000;
+    color: #0d47a1;
 }
 
 .portal-header p {
-    color: #d90429; /* Rojo vivo */
-    font-size: 1.1rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 5px;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
 }
 
-/* TARJETA BLANCA CON SOMBRA Y BORDES ROJOS */
+/* TARJETAS / CONTENEDORES */
 .card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 35px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-    border: 2px solid #e2e8f0;
-    border-top: 6px solid #d90429; /* Franja roja distintiva */
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+    width: 100%;
 }
 
-.card h3 {
-    color: #0f172a;
-    font-size: 1.4rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.card p {
-    color: #64748b;
-    font-size: 0.95rem;
-    margin-bottom: 25px;
-}
-
-/* INPUTS MÁS MASCULINOS Y DEFINIDOS */
+/* FORMULARIOS E INPUTS */
 .input-group {
-    margin-bottom: 22px;
     display: flex;
     flex-direction: column;
+    margin-bottom: 12px;
 }
 
 .input-group label {
     font-size: 0.85rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: #0f172a;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-    width: 100%;
-    padding: 14px 16px;
-    background-color: #f1f5f9;
-    border: 2px solid #cbd5e1;
-    border-radius: 10px;
-    color: #0f172a;
-    font-size: 1.05rem;
     font-weight: 600;
+    color: #334155;
+    margin-bottom: 4px;
+}
+
+.input-group input, 
+.input-group textarea, 
+.input-group select {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
     outline: none;
-    transition: all 0.25s ease;
+    transition: border-color 0.2s;
+    width: 100%;
 }
 
-input:focus {
-    border-color: #d90429; /* Borde rojo vivo al escribir */
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(217, 4, 41, 0.2);
+.input-group input:focus, 
+.input-group textarea:focus {
+    border-color: #0d47a1;
 }
 
-/* BOTÓN ROJO DE IMPACTO */
+/* BOTONES */
 .btn-primary {
-    background: linear-gradient(135deg, #ef233c, #d90429);
-    color: #ffffff;
-    padding: 15px 25px;
+    background-color: #0d47a1;
+    color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 6px 20px rgba(217, 4, 41, 0.35);
+    transition: background 0.2s;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #d90429, #b7021d);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(217, 4, 41, 0.5);
+    background-color: #1565c0;
 }
 
 .btn-secondary {
-    background-color: #ffffff;
-    color: #0f172a;
+    background-color: #e2e8f0;
+    color: #334155;
+    border: none;
     padding: 10px 18px;
-    border: 2px solid #0f172a;
-    border-radius: 8px;
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 0.8rem;
+    border-radius: 6px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: #cbd5e1;
 }
 
-/* VENTANA MODAL PARA ADMIN */
+/* MODALES */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(5px);
+    background: rgba(0,0,0,0.5);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 15px;
 }
 
 .modal-content {
-    width: 90%;
-    max-width: 420px;
-    background: #ffffff;
-    padding: 35px;
-    border-radius: 16px;
-    border-top: 6px solid #0d47a1;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 500px;
+}
+
+/* ==========================================
+   REGLAS DE ADAPTACIÓN A CELULARES (RESPONSIVE)
+   ========================================== */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .portal-header {
+        padding-top: 50px;
+    }
+
+    .portal-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    /* La tarjeta de información del cliente pasa a 1 sola columna */
+    #cliente-info-vehiculo div {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    /* El formulario de registro de la orden pasa a 1 columna */
+    #form-nueva-orden {
+        grid-template-columns: 1fr !important;
+    }
+
+    #form-nueva-orden .input-group {
+        grid-column: span 1 !important;
+    }
+
+    /* El modal de editar registro pasa a 1 columna */
+    #form-editar-orden {
+        grid-template-columns: 1fr !important;
+    }
+
+    #form-editar-orden .input-group {
+        grid-column: span 1 !important;
+    }
+
+    /* Botón de login/logout arriba a la derecha ajustado */
+    div[style*="position: absolute"] {
+        top: 10px !important;
+        right: 10px !important;
+    }
+
+    .btn-secondary, .btn-primary {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
 }
