@@ -126,7 +126,8 @@ async function consultarVehiculoCliente(event) {
         const { data: ordenes, error: errOrdenes } = await dbClient
             .from('ordenes_trabajo')
             .select('*')
-            .eq('vehiculo_id', vehiculo.id);
+            .eq('vehiculo_id', vehiculo.id)
+            .order('fecha_ingreso', { ascending: false });
 
         if (errOrdenes) console.error("Error al buscar historial:", errOrdenes);
 
@@ -204,32 +205,48 @@ async function guardarOrdenAdmin(event) {
             }
         }
 
-        const { data: cliente, error: errCliente } = await dbClient
-            .from('clientes')
-            .insert([{ nombre: nombre, telefono: telefono }])
-            .select()
-            .single();
-
-        if (errCliente) throw errCliente;
-
-        const { data: vehiculo, error: errVehiculo } = await dbClient
+        // 1. Verificamos si el vehículo ya existe por su matrícula
+        let vehiculoId = null;
+        const { data: vehiculoExistente } = await dbClient
             .from('vehiculos')
-            .insert([{ 
-                cliente_id: cliente.id, 
-                matricula: matricula, 
-                marca: vehiculoDetalle,
-                modelo: vehiculoDetalle,
-                chasis: chasis
-            }])
-            .select()
-            .single();
+            .select('id')
+            .eq('matricula', matricula)
+            .maybeSingle();
 
-        if (errVehiculo) throw errVehiculo;
+        if (vehiculoExistente) {
+            // Ya está registrado, asociamos la nueva orden a esta ID
+            vehiculoId = vehiculoExistente.id;
+        } else {
+            // 2. Si es nuevo, creamos cliente y vehículo
+            const { data: cliente, error: errCliente } = await dbClient
+                .from('clientes')
+                .insert([{ nombre: nombre, telefono: telefono }])
+                .select()
+                .single();
 
+            if (errCliente) throw errCliente;
+
+            const { data: nuevoVehiculo, error: errVehiculo } = await dbClient
+                .from('vehiculos')
+                .insert([{ 
+                    cliente_id: cliente.id, 
+                    matricula: matricula, 
+                    marca: vehiculoDetalle,
+                    modelo: vehiculoDetalle,
+                    chasis: chasis
+                }])
+                .select()
+                .single();
+
+            if (errVehiculo) throw errVehiculo;
+            vehiculoId = nuevoVehiculo.id;
+        }
+
+        // 3. Insertamos la orden de trabajo asociada
         const { error: errOrden } = await dbClient
             .from('ordenes_trabajo')
             .insert([{ 
-                vehiculo_id: vehiculo.id, 
+                vehiculo_id: vehiculoId, 
                 motivo: motivo, 
                 trabajo_realizado: 'Pendiente de revisión',
                 fecha_ingreso: new Date().toISOString().split('T')[0],
@@ -241,7 +258,7 @@ async function guardarOrdenAdmin(event) {
 
         if (errOrden) throw errOrden;
 
-        alert('¡Vehículo registrado con éxito!');
+        alert('¡Registro guardado con éxito!');
         document.getElementById('form-nueva-orden').reset();
         cargarOrdenesAdmin();
 
