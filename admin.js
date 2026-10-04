@@ -39,15 +39,15 @@ function cambiarPestanaAdmin(pestana) {
     const btnHist = document.getElementById('btn-tab-historial');
 
     if (pestana === 'registro') {
-        reg.style.display = 'block';
-        hist.style.display = 'none';
-        btnReg.className = 'btn-primary';
-        btnHist.className = 'btn-secondary';
+        if (reg) reg.style.display = 'block';
+        if (hist) hist.style.display = 'none';
+        if (btnReg) btnReg.className = 'btn-primary';
+        if (btnHist) btnHist.className = 'btn-secondary';
     } else {
-        reg.style.display = 'none';
-        hist.style.display = 'block';
-        btnReg.className = 'btn-secondary';
-        btnHist.className = 'btn-primary';
+        if (reg) reg.style.display = 'none';
+        if (hist) hist.style.display = 'block';
+        if (btnReg) btnReg.className = 'btn-secondary';
+        if (btnHist) btnHist.className = 'btn-primary';
         cargarOrdenesAdmin();
     }
 }
@@ -235,6 +235,7 @@ async function guardarOrdenAdmin(event) {
 
         alert('¡Vehículo registrado con éxito!');
         document.getElementById('form-nueva-orden').reset();
+        cargarOrdenesAdmin(); // Actualiza la lista en segundo plano
 
     } catch (error) {
         console.error("Error al guardar:", error);

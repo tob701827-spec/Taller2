@@ -34,10 +34,10 @@
             </form>
 
             <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-                <!-- Tarjeta Destacada -->
-                <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px;"></div>
+                <!-- Tarjeta Destacada del Cliente -->
+                <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
 
-                <h4 style="margin-top: 15px; color: #0d47a1;">📋 Historial de Trabajos:</h4>
+                <h4 style="margin-top: 15px; color: #0d47a1;">📋 Historial de Trabajos Realizados:</h4>
                 <div style="overflow-x: auto;">
                     <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
                         <thead>
@@ -72,13 +72,13 @@
             <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
 
-        <!-- BOTONES DE NAVEGACIÓN ADMINISTRADOR -->
+        <!-- BOTONES NAVEGADORES DEL ADMIN -->
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <button id="btn-tab-registro" type="button" class="btn-primary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('registro')">📝 Registrar Nuevo Vehículo</button>
             <button id="btn-tab-historial" type="button" class="btn-secondary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('historial')">🗂️ Ver Historial y Base de Datos</button>
         </div>
 
-        <!-- PESTAÑA 1: FORMULARIO DE REGISTRO -->
+        <!-- PESTAÑA REGISTRO DE ORDEN -->
         <div id="pestana-registro" class="card">
             <h3>📝 Registrar Nuevo Vehículo / Orden</h3>
             <form id="form-nueva-orden" onsubmit="guardarOrdenAdmin(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
@@ -128,7 +128,7 @@
             </form>
         </div>
 
-        <!-- PESTAÑA 2: HISTORIAL Y BASE DE DATOS -->
+        <!-- PESTAÑA HISTORIAL Y BASE DE DATOS -->
         <div id="pestana-historial" class="card" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h3>🗂️ Registro General del Taller</h3>
