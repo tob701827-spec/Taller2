@@ -3,6 +3,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+let listaOrdenesGlobal = []; // Guardar órdenes en memoria para la edición
+
 document.addEventListener('DOMContentLoaded', () => {
     verificarSesion();
 });
@@ -59,6 +61,11 @@ function abrirModalAdmin() {
 
 function cerrarModalAdmin() {
     const modal = document.getElementById('modal-admin');
+    if (modal) modal.style.display = 'none';
+}
+
+function cerrarModalEditar() {
+    const modal = document.getElementById('modal-editar-orden');
     if (modal) modal.style.display = 'none';
 }
 
@@ -127,7 +134,7 @@ async function consultarVehiculoCliente(event) {
         tbody.innerHTML = '';
 
         if (!ordenes || ordenes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
         } else {
             ordenes.forEach(o => {
                 let fotosHtml = 'Sin foto';
@@ -148,6 +155,7 @@ async function consultarVehiculoCliente(event) {
                         <td style="padding: 10px;">${o.motivo || '-'}</td>
                         <td style="padding: 10px;">${o.dtc || '-'}</td>
                         <td style="padding: 10px;"><strong>${o.trabajo_realizado || '-'}</strong></td>
+                        <td style="padding: 10px;">${o.observaciones || '-'}</td>
                         <td style="padding: 10px;">${fotosHtml}</td>
                     </tr>
                 `;
@@ -235,7 +243,7 @@ async function guardarOrdenAdmin(event) {
 
         alert('¡Vehículo registrado con éxito!');
         document.getElementById('form-nueva-orden').reset();
-        cargarOrdenesAdmin(); // Actualiza la lista en segundo plano
+        cargarOrdenesAdmin();
 
     } catch (error) {
         console.error("Error al guardar:", error);
@@ -247,7 +255,7 @@ async function cargarOrdenesAdmin() {
     const tbody = document.getElementById('tabla-admin-ordenes');
     if (!tbody) return;
 
-    tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center;">Cargando lista de vehículos...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center;">Cargando lista de vehículos...</td></tr>';
 
     try {
         const { data: ordenes, error } = await dbClient
@@ -257,10 +265,11 @@ async function cargarOrdenesAdmin() {
 
         if (error) throw error;
 
+        listaOrdenesGlobal = ordenes || [];
         tbody.innerHTML = '';
 
         if (!ordenes || ordenes.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center;">No hay vehículos registrados en la base de datos.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center;">No hay vehículos registrados en la base de datos.</td></tr>';
             return;
         }
 
@@ -285,9 +294,10 @@ async function cargarOrdenesAdmin() {
                     <td style="padding: 8px;">${o.kilometraje || '-'}</td>
                     <td style="padding: 8px;">${o.motivo || '-'}</td>
                     <td style="padding: 8px;">${o.trabajo_realizado || '-'}</td>
+                    <td style="padding: 8px;">${o.observaciones || '-'}</td>
                     <td style="padding: 8px;">${fotosHtml}</td>
                     <td style="padding: 8px; text-align: center;">
-                        <button style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 3px;" onclick="editarOrdenAdmin('${o.id}', '${o.trabajo_realizado || ''}')">✏️ Editar</button>
+                        <button style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 3px;" onclick="abrirModalEditar('${o.id}')">✏️ Editar</button>
                         <button style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;" onclick="eliminarOrdenAdmin('${o.id}')">🗑️ Borrar</button>
                     </td>
                 </tr>
@@ -296,26 +306,59 @@ async function cargarOrdenesAdmin() {
 
     } catch (err) {
         console.error("Error al cargar lista:", err);
-        tbody.innerHTML = '<tr><td colspan="8" style="padding: 15px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="padding: 15px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
     }
 }
 
-async function editarOrdenAdmin(ordenId, trabajoActual) {
-    const nuevoTrabajo = prompt("Actualizar trabajo realizado / estado del vehículo:", trabajoActual);
-    if (nuevoTrabajo === null) return;
+// ABRIR Y RELLENAR MODAL PARA EDITAR TODOS LOS DATOS
+function abrirModalEditar(ordenId) {
+    const orden = listaOrdenesGlobal.find(o => String(o.id) === String(ordenId));
+    if (!orden) return;
+
+    document.getElementById('edit-orden-id').value = orden.id;
+    document.getElementById('edit-fecha').value = orden.fecha_ingreso || '';
+    document.getElementById('edit-kilometraje').value = orden.kilometraje || '';
+    document.getElementById('edit-motivo').value = orden.motivo || '';
+    document.getElementById('edit-dtc').value = orden.dtc || '';
+    document.getElementById('edit-trabajo').value = orden.trabajo_realizado || '';
+    document.getElementById('edit-observaciones').value = orden.observaciones || '';
+
+    document.getElementById('modal-editar-orden').style.display = 'flex';
+}
+
+// GUARDAR CAMBIOS DE LA EDICIÓN COMPLETA
+async function actualizarOrdenCompleta(event) {
+    if (event) event.preventDefault();
+
+    const ordenId = document.getElementById('edit-orden-id').value;
+    const fecha = document.getElementById('edit-fecha').value;
+    const kilometraje = document.getElementById('edit-kilometraje').value;
+    const motivo = document.getElementById('edit-motivo').value;
+    const dtc = document.getElementById('edit-dtc').value;
+    const trabajo = document.getElementById('edit-trabajo').value;
+    const observaciones = document.getElementById('edit-observaciones').value;
 
     try {
         const { error } = await dbClient
             .from('ordenes_trabajo')
-            .update({ trabajo_realizado: nuevoTrabajo })
+            .update({
+                fecha_ingreso: fecha,
+                kilometraje: kilometraje,
+                motivo: motivo,
+                dtc: dtc,
+                trabajo_realizado: trabajo,
+                observaciones: observaciones
+            })
             .eq('id', ordenId);
 
         if (error) throw error;
 
-        alert('¡Orden actualizada correctamente!');
+        alert('¡Registro de orden actualizado exitosamente!');
+        cerrarModalEditar();
         cargarOrdenesAdmin();
+
     } catch (err) {
-        alert('Error al actualizar: ' + err.message);
+        alert('Error al actualizar registro: ' + err.message);
     }
 }
 

@@ -22,7 +22,7 @@
             <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
         </header>
 
-        <div class="card" style="max-width: 850px; margin: 0 auto;">
+        <div class="card" style="max-width: 900px; margin: 0 auto;">
             <h3>🚗 Consulta de Cliente</h3>
             <p>Ingresa la matrícula de tu vehículo para ver su historial y estado actual.</p>
             <form id="form-consulta" onsubmit="consultarVehiculoCliente(event)">
@@ -47,6 +47,7 @@
                                 <th style="padding: 10px;">Motivo / Falla</th>
                                 <th style="padding: 10px;">DTC</th>
                                 <th style="padding: 10px;">Trabajo Realizado</th>
+                                <th style="padding: 10px;">Observaciones</th>
                                 <th style="padding: 10px;">Fotografía</th>
                             </tr>
                         </thead>
@@ -72,7 +73,7 @@
             <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
 
-        <!-- BOTONES NAVEGADORES DEL ADMIN -->
+        <!-- BOTONES DE NAVEGACIÓN -->
         <div style="display: flex; gap: 10px; margin-bottom: 20px;">
             <button id="btn-tab-registro" type="button" class="btn-primary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('registro')">📝 Registrar Nuevo Vehículo</button>
             <button id="btn-tab-historial" type="button" class="btn-secondary" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="cambiarPestanaAdmin('historial')">🗂️ Ver Historial y Base de Datos</button>
@@ -144,6 +145,7 @@
                             <th style="padding: 10px;">Km</th>
                             <th style="padding: 10px;">Falla</th>
                             <th style="padding: 10px;">Trabajo Realizado</th>
+                            <th style="padding: 10px;">Observaciones</th>
                             <th style="padding: 10px;">Fotografía</th>
                             <th style="padding: 10px; text-align: center;">Acciones</th>
                         </tr>
@@ -151,6 +153,44 @@
                     <tbody id="tabla-admin-ordenes"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR REGISTRO COMPLETO -->
+    <div id="modal-editar-orden" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 650px;">
+            <h3 style="margin-bottom: 15px; color: #0d47a1;">✏️️ Editar Registro de Orden</h3>
+            <form id="form-editar-orden" onsubmit="actualizarOrdenCompleta(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <input type="hidden" id="edit-orden-id">
+                <div class="input-group">
+                    <label>Fecha de Ingreso</label>
+                    <input type="date" id="edit-fecha" required>
+                </div>
+                <div class="input-group">
+                    <label>Kilometraje (km)</label>
+                    <input type="text" id="edit-kilometraje">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Motivo de Ingreso / Falla</label>
+                    <input type="text" id="edit-motivo" required>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Códigos DTC (Escáner)</label>
+                    <input type="text" id="edit-dtc">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Trabajo Realizado / Estado</label>
+                    <input type="text" id="edit-trabajo" required>
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Observaciones / Diagnóstico</label>
+                    <textarea id="edit-observaciones" rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;"></textarea>
+                </div>
+                <div style="grid-column: span 2; display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                    <button type="button" class="btn-secondary" onclick="cerrarModalEditar()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
         </div>
     </div>
 
