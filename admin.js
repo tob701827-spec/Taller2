@@ -89,92 +89,121 @@ async function cerrarSesion() {
     verificarSesion();
 }
 
-// CONSULTA DE CLIENTE: MUESTRA EL HISTORIAL COMPLETO
+// BÚSQUEDA CORREGIDA PASO A PASO PARA EVITAR ERRORES DE CONSULTA
 async function consultarVehiculoCliente(event) {
     if (event) event.preventDefault();
-    const matricula = document.getElementById('input-matricula').value.trim().toUpperCase();
+    const matriculaInput = document.getElementById('input-matricula');
+    if (!matriculaInput) return;
+
+    const matricula = matriculaInput.value.trim().toUpperCase();
     if (!matricula) return;
 
     try {
+        // 1. Buscar el vehículo por matrícula de forma directa
         const { data: vehiculos, error: errVehiculo } = await dbClient
             .from('vehiculos')
-            .select('*, clientes(nombre, telefono)')
+            .select('*')
             .eq('matricula', matricula);
 
         if (errVehiculo) {
             console.error("Error al buscar vehículo:", errVehiculo);
-            alert('Ocurrió un error al consultar la base de datos.');
+            alert('Error en Supabase: ' + errVehiculo.message);
             return;
         }
 
         if (!vehiculos || vehiculos.length === 0) {
             alert('No se encontró ningún vehículo registrado con esa matrícula.');
-            document.getElementById('resultado-cliente').style.display = 'none';
+            const resContainer = document.getElementById('resultado-cliente');
+            if (resContainer) resContainer.style.display = 'none';
             return;
         }
 
         const primerVehiculo = vehiculos[0];
-        const vehiculoIds = vehiculos.map(v => v.id);
+        const idsVehiculos = vehiculos.map(v => v.id);
 
-        document.getElementById('cliente-info-vehiculo').innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div><strong>👤 Cliente:</strong> ${primerVehiculo.clientes ? primerVehiculo.clientes.nombre : 'N/A'}</div>
-                <div><strong>📞 Teléfono:</strong> ${primerVehiculo.clientes ? primerVehiculo.clientes.telefono || 'N/A' : 'N/A'}</div>
-                <div><strong>🚘 Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
-                <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
-                <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
-            </div>
-        `;
+        // 2. Obtener datos del cliente si existe cliente_id
+        let clienteNombre = 'N/A';
+        let clienteTelefono = 'N/A';
 
+        if (primerVehiculo.cliente_id) {
+            const { data: cliente } = await dbClient
+                .from('clientes')
+                .select('*')
+                .eq('id', primerVehiculo.cliente_id)
+                .maybeSingle();
+
+            if (cliente) {
+                clienteNombre = cliente.nombre || 'N/A';
+                clienteTelefono = cliente.telefono || 'N/A';
+            }
+        }
+
+        const infoContainer = document.getElementById('cliente-info-vehiculo');
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><strong>👤 Cliente:</strong> ${clienteNombre}</div>
+                    <div><strong>📞 Teléfono:</strong> ${clienteTelefono}</div>
+                    <div><strong>🚘 Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
+                    <div><strong>🆔 Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
+                    <div style="grid-column: span 2;"><strong>🔍 Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
+                </div>
+            `;
+        }
+
+        // 3. Traer el historial de órdenes de trabajo asociadas
         const { data: ordenes, error: errOrdenes } = await dbClient
             .from('ordenes_trabajo')
             .select('*')
-            .in('vehiculo_id', vehiculoIds)
+            .in('vehiculo_id', idsVehiculos)
             .order('fecha_ingreso', { ascending: false });
 
-        if (errOrdenes) console.error("Error al buscar historial:", errOrdenes);
+        if (errOrdenes) console.error("Error al buscar órdenes:", errOrdenes);
 
         const tbody = document.getElementById('tabla-cliente-historial');
-        tbody.innerHTML = '';
+        if (tbody) {
+            tbody.innerHTML = '';
 
-        if (!ordenes || ordenes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
-        } else {
-            ordenes.forEach(o => {
-                let fotosHtml = 'Sin foto';
-                if (o.fotos && o.fotos.length > 0) {
-                    fotosHtml = o.fotos.map(url => `
-                        <div style="margin: 5px 0;">
-                            <a href="${url}" target="_blank">
-                                <img src="${url}" style="max-width: 140px; max-height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Ver imagen completa" />
-                            </a>
-                        </div>
-                    `).join('');
-                }
+            if (!ordenes || ordenes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding: 12px; text-align: center;">No hay historial registrado para este vehículo.</td></tr>`;
+            } else {
+                ordenes.forEach(o => {
+                    let fotosHtml = 'Sin foto';
+                    if (o.fotos && o.fotos.length > 0) {
+                        fotosHtml = o.fotos.map(url => `
+                            <div style="margin: 5px 0;">
+                                <a href="${url}" target="_blank">
+                                    <img src="${url}" style="max-width: 140px; max-height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #0d47a1; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Ver imagen completa" />
+                                </a>
+                            </div>
+                        `).join('');
+                    }
 
-                tbody.innerHTML += `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 10px;">${o.fecha_ingreso || '-'}</td>
-                        <td style="padding: 10px;">${o.kilometraje || '-'} km</td>
-                        <td style="padding: 10px;">${o.motivo || '-'}</td>
-                        <td style="padding: 10px;">${o.dtc || '-'}</td>
-                        <td style="padding: 10px;"><strong>${o.trabajo_realizado || '-'}</strong></td>
-                        <td style="padding: 10px;">${o.observaciones || '-'}</td>
-                        <td style="padding: 10px;">${fotosHtml}</td>
-                    </tr>
-                `;
-            });
+                    tbody.innerHTML += `
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 10px;">${o.fecha_ingreso || '-'}</td>
+                            <td style="padding: 10px;">${o.kilometraje || '-'} km</td>
+                            <td style="padding: 10px;">${o.motivo || '-'}</td>
+                            <td style="padding: 10px;">${o.dtc || '-'}</td>
+                            <td style="padding: 10px;"><strong>${o.trabajo_realizado || '-'}</strong></td>
+                            <td style="padding: 10px;">${o.observaciones || '-'}</td>
+                            <td style="padding: 10px;">${fotosHtml}</td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
-        document.getElementById('resultado-cliente').style.display = 'block';
+        const resDiv = document.getElementById('resultado-cliente');
+        if (resDiv) resDiv.style.display = 'block';
 
     } catch (err) {
-        console.error("Error en la consulta:", err);
-        alert("Ocurrió un error inesperado al realizar la búsqueda.");
+        console.error("Error imprevisto en la búsqueda:", err);
+        alert("Ocurrió un problema inesperado durante la consulta.");
     }
 }
 
-// GUARDAR REGISTRO SIN BLOQUEO DE MATRÍCULA
+// GUARDAR REGISTRO VINCULANDO O REUTILIZANDO MATRÍCULA
 async function guardarOrdenAdmin(event) {
     if (event) event.preventDefault();
 
@@ -209,18 +238,16 @@ async function guardarOrdenAdmin(event) {
             }
         }
 
-        // Buscar si ya existe un registro de este vehículo
-        let { data: vehiculoExistente } = await dbClient
+        // Buscar si ya existe el vehículo
+        let { data: vehiculosExistentes } = await dbClient
             .from('vehiculos')
             .select('id')
-            .eq('matricula', matricula)
-            .limit(1)
-            .maybeSingle();
+            .eq('matricula', matricula);
 
         let vehiculoId = null;
 
-        if (vehiculoExistente) {
-            vehiculoId = vehiculoExistente.id;
+        if (vehiculosExistentes && vehiculosExistentes.length > 0) {
+            vehiculoId = vehiculosExistentes[0].id;
         } else {
             const { data: cliente, error: errCliente } = await dbClient
                 .from('clientes')
@@ -261,7 +288,7 @@ async function guardarOrdenAdmin(event) {
 
         if (errOrden) throw errOrden;
 
-        alert('¡Registro guardado exitosamente!');
+        alert('¡Registro guardado con éxito!');
         document.getElementById('form-nueva-orden').reset();
         cargarOrdenesAdmin();
 
@@ -371,7 +398,7 @@ async function actualizarOrdenCompleta(event) {
 
         if (error) throw error;
 
-        alert('¡Registro actualizado exitosamente!');
+        alert('¡Registro actualizado con éxito!');
         cerrarModalEditar();
         cargarOrdenesAdmin();
 
