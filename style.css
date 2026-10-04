@@ -7,16 +7,17 @@
 }
 
 body {
-    background-color: #0b0f19;
+    background-color: #f3f4f6;
     color: #1f2937;
     padding: 10px;
     min-height: 100vh;
     position: relative;
-    /* Fondo con franja negra arriba/centro y detalle rojo en las esquinas */
-    background-image: linear-gradient(135deg, #0b0f19 75%, #dc2626 75%);
+    /* Fondo claro con el detalle negro y rojo en la esquina inferior */
+    background-image: linear-gradient(135deg, transparent 72%, #111827 72%, #111827 84%, #dc2626 84%);
     background-repeat: no-repeat;
+    background-position: bottom right;
     background-attachment: fixed;
-    background-size: cover;
+    background-size: 100% 100%;
 }
 
 /* HEADER CON TEXTO GRANDE AZUL Y RED */

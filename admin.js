@@ -140,13 +140,17 @@ async function consultarVehiculoCliente(event) {
             }
         }
 
+        const textoVehiculo = primerVehiculo.marca === primerVehiculo.modelo 
+            ? (primerVehiculo.marca || 'N/A') 
+            : `${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}`.trim() || 'N/A';
+
         const infoContainer = document.getElementById('cliente-info-vehiculo');
         if (infoContainer) {
             infoContainer.innerHTML = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div><strong> Cliente:</strong> ${clienteNombre}</div>
                     <div><strong> Teléfono:</strong> ${clienteTelefono}</div>
-                    <div><strong> Vehículo:</strong> ${primerVehiculo.marca || ''} ${primerVehiculo.modelo || ''}</div>
+                    <div><strong> Vehículo:</strong> ${textoVehiculo}</div>
                     <div><strong> Matrícula:</strong> <span style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${primerVehiculo.matricula}</span></div>
                     <div style="grid-column: span 2;"><strong> Nº de Chasis / VIN:</strong> ${primerVehiculo.chasis || 'N/A'}</div>
                 </div>
