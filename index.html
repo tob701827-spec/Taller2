@@ -34,7 +34,6 @@
             </form>
 
             <div id="resultado-cliente" style="display: none; margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-                <!-- Tarjeta Destacada del Cliente -->
                 <div id="cliente-info-vehiculo" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"></div>
 
                 <h4 style="margin-top: 15px; color: #0d47a1;"> Historial de Trabajos Realizados:</h4>
@@ -61,8 +60,8 @@
     <!-- VISTA 2: PANEL DE ADMINISTRACIÓN -->
     <div id="vista-admin" style="display: none; max-width: 1100px; margin: 40px auto; padding: 20px;">
         <header class="portal-header">
-            <h1>PANEL DE <span>ADMINISTRACIÓN</span></h1>
-            <p>SISTEMA DE GESTIÓN DEL TALLER</p>
+            <h1>AUTOMECANICA <span>CAÑETE HERMANOS</span></h1>
+            <p>REPARACIÓN DE CAJAS AUTOMÁTICAS</p>
         </header>
 
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -114,6 +113,10 @@
                 <div class="input-group" style="grid-column: span 2;">
                     <label>Códigos DTC (Escáner)</label>
                     <input type="text" id="admin-dtc" placeholder="Ej: P1122, P0300">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Trabajo Realizado / Estado</label>
+                    <input type="text" id="admin-trabajo" placeholder="Ej: Cambio de aceite de caja, escaneo y reparación">
                 </div>
                 <div class="input-group" style="grid-column: span 2;">
                     <label>Observaciones / Diagnóstico</label>

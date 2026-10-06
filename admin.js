@@ -215,6 +215,11 @@ async function guardarOrdenAdmin(event) {
     const kilometraje = document.getElementById('admin-kilometraje').value.trim();
     const motivo = document.getElementById('admin-motivo').value.trim();
     const dtc = document.getElementById('admin-dtc').value.trim();
+    
+    // Leemos el nuevo campo de trabajo realizado desde el formulario
+    const trabajoInput = document.getElementById('admin-trabajo');
+    const trabajo = trabajoInput && trabajoInput.value.trim() ? trabajoInput.value.trim() : 'Pendiente de revisión';
+
     const observaciones = document.getElementById('admin-observaciones').value.trim();
     const inputFotos = document.getElementById('admin-fotos');
 
@@ -277,7 +282,7 @@ async function guardarOrdenAdmin(event) {
             .insert([{ 
                 vehiculo_id: vehiculoId, 
                 motivo: motivo, 
-                trabajo_realizado: 'Pendiente de revisión',
+                trabajo_realizado: trabajo,
                 fecha_ingreso: new Date().toISOString().split('T')[0],
                 kilometraje: kilometraje,
                 dtc: dtc,
@@ -379,13 +384,11 @@ function filtrarVehiculosAdmin() {
 
     const texto = input.value.toLowerCase().trim();
     
-    // Si el buscador está vacío, muestra la lista completa
     if (!texto) {
         renderizarTablaAdmin(agrupadoVehiculosGlobal);
         return;
     }
 
-    // Filtrar los registros por matrícula o por nombre del cliente
     const filtrado = {};
     Object.keys(agrupadoVehiculosGlobal).forEach(mat => {
         const item = agrupadoVehiculosGlobal[mat];
